@@ -16,7 +16,6 @@ from selenium.webdriver.support import expected_conditions as EC
 
 klse_url = 'https://www.klsescreener.com/v2/'
 
-
 format = logging.Formatter(fmt='%(asctime)s [%(levelname)s]: %(message)s', datefmt='%Y%m%d-%H:%M:%S')
 
 logs = logging.getLogger('stock_list')
@@ -37,7 +36,8 @@ def web_access():
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--test-type')
     logs.info('Opening chrome')
-    driver = webdriver.Chrome(executable_path=r'../../external file/chromedriver.exe', chrome_options=options)
+    executable_path = os.path.abspath(r'../../external file/chromedriver.exe')
+    driver = webdriver.Chrome(executable_path=executable_path, chrome_options=options)
     driver.get(klse_url)
     logs.info('Loading KLSE web page')
     xpath_submit = "//*[@id='submit']"
@@ -59,11 +59,12 @@ def web_scrapping_stock(data):
     html = BeautifulSoup(data, 'lxml')
     stock_tb_list = html.find(name='tbody').findAll(name='tr')
     csv_file_name = datetime.today().date().__str__() + '_stock_list.csv'
-    with open('stock_list.csv', mode='w') as f:
+    with open('stock_list.csv', mode='w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['Code', 'Company', 'Company name', 'Category', 'Market', 'EPS', 'NTA', 'PE', 'DY', 'ROE', 'Market capital'])
+        writer.writerow(['Code', 'Company', 'Company name', 'Category', 'Market', 'EPS', 'NTA', 'PE', 'DY', 'ROE',
+                         'Market capital'])
         for index, row_data in enumerate(stock_tb_list):
-            code = row_data.find(attrs={'title': 'Code'}).text
+            code = str(row_data.find(attrs={'title': 'Code'}).text)
             if re.search(r'[A-Z]', code):
                 continue
             company_name = row_data.find(name='td').attrs.get('title')
@@ -76,8 +77,9 @@ def web_scrapping_stock(data):
             DY = row_data.find(attrs={'title': 'DY'}).text
             ROE = row_data.find(attrs={'title': 'ROE'}).text
             Market_cap = row_data.find(attrs={'title': 'Market Capital'}).text
-            logs.info(f'{index+1}\t{code},{company},{company_name},{category},{market.strip()},{EPS},{NTA},{PE},{DY},{ROE},{Market_cap}')
-            writer.writerow([code,company,company_name,category,market,EPS,NTA,PE,DY,ROE,Market_cap])
+            logs.info(
+                f'{index + 1}\t{code},{company},{company_name},{category},{market.strip()},{EPS},{NTA},{PE},{DY},{ROE},{Market_cap}')
+            writer.writerow([code, company, company_name, category, market.strip(), EPS, NTA, PE, DY, ROE, Market_cap])
     return 0
 
 
