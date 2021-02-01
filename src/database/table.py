@@ -16,6 +16,16 @@ class Company(Base):
     market_cap = Column(FLOAT)
 
 
+class Stock_News(Base):
+    __tablename__ = 'stock news'
+    code = Column(String, unique=True)
+    comp = Column(String, ForeignKey('company.company'), primary_key=True)
+    news = Column(String)
+    company = relationship('Company', back_populates='news')
+
+
+Company.news = relationship('Stock_News', back_populates='company')
+
 if __name__ == '__main__':
     engine = create_engine('sqlite:///template.db', echo=True)
     Session = sessionmaker(bind=engine)
