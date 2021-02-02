@@ -5,6 +5,7 @@ import sys
 import re
 import csv
 from datetime import datetime
+from urllib.request import Request, urlopen
 
 # 3rd party library
 from bs4 import BeautifulSoup
@@ -14,7 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-klse_url = 'https://www.klsescreener.com/v2/'
+klse_url = 'https://www.klsescreener.com'
 
 format = logging.Formatter(fmt='%(asctime)s [%(levelname)s]: %(message)s', datefmt='%Y%m%d-%H:%M:%S')
 
@@ -65,7 +66,7 @@ def web_scrapping_stock(data):
                          'Market capital'])
         for index, row_data in enumerate(stock_tb_list):
             code = str(row_data.find(attrs={'title': 'Code'}).text)
-            if re.search(r'[A-Z]', code):
+            if re.search(r'[A-Z]', code) or len(code) > 4:
                 continue
             company_name = row_data.find(name='td').attrs.get('title')
             match = re.match(r'(?P<company>[\w\d\-]+)', row_data.find(name='td').getText())
@@ -80,9 +81,40 @@ def web_scrapping_stock(data):
             logs.info(
                 f'{index + 1}\t{code},{company},{company_name},{category},{market.strip()},{EPS},{NTA},{PE},{DY},{ROE},{Market_cap}')
             writer.writerow([code, company, company_name, category, market.strip(), EPS, NTA, PE, DY, ROE, Market_cap])
+            news_list = web_scrapping_news(code)
+            [logs.info(f"tile: {news['news_title']}, date = {news['news_date']} source: {news['news_source']} \n link: {news['news_link']}") for news in news_list]
+            # print(f'tile: {news_title}')
     return 0
+
+
+def web_scrapping_news(code):
+    klse_news_url = f'{klse_url}/v2/news/stock/{code}'
+    try:
+        req = Request(url=klse_news_url, headers={'user-agent': 'my-app'})
+        data = urlopen(req)
+    except Exception as e:
+        logs.critical(f'{e}, Unable to access webpage')
+        return []
+    html = BeautifulSoup(data, 'lxml')
+    news_list = []
+    for article_lxml in html.findAll(name='div', attrs={'class': 'article flex-1'}):
+        news_dic = {}
+        news_lxml = article_lxml.find(name='div', attrs={'class': 'item-title'})
+        date_lxml = article_lxml.find(name='div', attrs={'class': 'item-title-secondary subtitle'}).findAll(name='span')
+        news_title = news_lxml.text
+        if re.search("[\u4e00-\u9FFF]", news_title) or re.search(r"\\u", news_title):
+            continue
+        news_dic['news_title'] = news_title
+        news_dic['news_link'] = klse_url + news_lxml.a.attrs['href']
+        news_dic['news_source'] = date_lxml[0].text
+        news_dic['news_date'] = date_lxml[1].attrs['data-date'].split(' ')[0]
+        # print(f'title: {news_title}, link: {news_link}, source: {news_source}, date: {news_date}')
+        news_list.append(news_dic)
+    return news_list
+
 
 
 if __name__ == '__main__':
     data = web_access()
     web_scrapping_stock(data)
+    # web_scrapping_news('2984')
