@@ -5,7 +5,7 @@ import subprocess
 import threading
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from src.database.table import Company, Base
+from src.database.table import Base, Company, News
 
 
 class GenerateDB:
@@ -50,7 +50,10 @@ class GenerateDB:
                     company_name=csv_row['Company name'],
                     category=csv_row['Category'],
                     market=csv_row['Market'],
-                    market_cap=float(csv_row['Market capital'])
+                    market_cap=float(csv_row['Market capital']),
+                    news=[News(code=csv_row['Code'],
+                               news_klse='https://www.klsescreener.com/v2/news/stock/{Code}'.format_map(csv_row),
+                               news_i3investor='https://klse.i3investor.com/servlets/stk/{Code}.jsp'.format_map(csv_row))]
                 )
                 insert_data_list.append(insert_data)
             self.session.add_all(insert_data_list)
@@ -68,7 +71,10 @@ class GenerateDB:
                         company_name=csv_row['Company name'],
                         category=csv_row['Category'],
                         market=csv_row['Market'],
-                        market_cap=float(csv_row['Market capital'])
+                        market_cap=float(csv_row['Market capital']),
+                        news=[News(code=csv_row['Code'],
+                                   news_klse='https://www.klsescreener.com/v2/news/stock/{Code}'.format_map(csv_row),
+                                   news_i3investor='https://klse.i3investor.com/servlets/stk/{Code}.jsp'.format_map(csv_row))]
                     )
                     self.session.add(insert_data)
                     self.session.commit()
@@ -81,6 +87,7 @@ class GenerateDB:
                         .filter(Company.company_name == csv_row['Company name'])\
                         .update({'market_cap': float(csv_row['Market capital'])})
                     self.session.commit()
+                    # UPDATE company set market_cap = new_market_cap WHERE Code==code AND Company == company AND Company name == company_name
                     continue
         self.session.close()
 
@@ -127,7 +134,7 @@ class GenerateDB:
 
 if __name__ == '__main__':
     csv_file = os.path.abspath('stock_list.csv')
-    # GenerateDB.update_csv()
+    GenerateDB.update_csv()
     GenerateDB.renew_table()
     # db = GenerateDB(csv_file)
     # db.stock_main_table()
