@@ -33,11 +33,16 @@ logs.addHandler(handler)
 
 
 def web_access():
+    """
+    Web access on KLSE main page and extract Malaysia Listed Company table
+    Returns:
+        data(html): return html form
+    """
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--test-type')
     logs.info('Opening chrome')
-    executable_path = os.path.abspath(r'../../external file/chromedriver.exe')
+    executable_path = os.path.abspath(r'../../external file/chromedriver.exe')  #todo: Pathlib to handle it
     driver = webdriver.Chrome(executable_path=executable_path, chrome_options=options)
     driver.get(klse_url)
     logs.info('Loading KLSE web page')
@@ -57,10 +62,18 @@ def web_access():
 
 
 def web_scrapping_stock(data):
+    """
+    extract Malaysia Listed Company into CSV (stock_list.csv)
+    Args:
+        data (html): html webpage from KLSE
+
+    Returns:
+        None
+    """
     html = BeautifulSoup(data, 'lxml')
     stock_tb_list = html.find(name='tbody').findAll(name='tr')
     csv_file_name = datetime.today().date().__str__() + '_stock_list.csv'
-    with open('stock_list.csv', mode='w', newline='') as f:
+    with open('stock_list.csv', mode='w', newline='') as f:     # todo: generate csv at temp folder
         writer = csv.writer(f)
         writer.writerow(['Code', 'Company', 'Company name', 'Category', 'Market', 'EPS', 'NTA', 'PE', 'DY', 'ROE',
                          'Market capital'])
@@ -85,11 +98,18 @@ def web_scrapping_stock(data):
             # news_list = web_scrapping_news(code)
             # [logs.info(f"tile: {news['news_title']}, date = {news['news_date']} source: {news['news_source']} \n link: {news['news_link']}") for news in news_list]
             # print(f'tile: {news_title}')
-    return 0
 
 
 def web_scrapping_news(code):
+    """
+    Extract news information based on CODE given
+    Args:
+        code (int): Company Code (4 digit)
 
+    Returns:
+        list
+    """
+    # todo: merge all news into one block of code
     # KLSE
     klse_news_url = f'{klse_url}/v2/news/stock/{code}'
     try:
@@ -97,7 +117,7 @@ def web_scrapping_news(code):
         data = urlopen(req)
     except Exception as e:
         logs.critical(f'{e}, Unable to access KLSE webpage')
-        return []
+        return []   # todo: pending on flask return
     html = BeautifulSoup(data, 'lxml')
     news_list = []
     for article_lxml in html.findAll(name='div', attrs={'class': 'article flex-1'}):
@@ -111,7 +131,7 @@ def web_scrapping_news(code):
         news_dic['news_link'] = klse_url + news_lxml.a.attrs['href']
         news_dic['news_source'] = date_lxml[0].text
         news_dic['news_date'] = date_lxml[1].attrs['data-date'].split(' ')[0]
-        logs.info(f"title: {news_title},source: {news_dic['news_source']}, date: {news_dic['news_date']}\nlink: {news_dic['news_link']}, ")
+        logs.info("title: {news_title},source: {news_source}, date: {news_date}\nlink: {news_link}, " .format_map(news_dic))
         news_list.append(news_dic)
 
     logs.info('\n\n\n\n\n\nI3INVESOTOR NEWS')
@@ -123,7 +143,8 @@ def web_scrapping_news(code):
         data_i3 = urlopen(req_i3)
     except Exception as e:
         logs.critical(f'{e}, Unable to access i3investor webpage')
-        return []
+        return []   # todo: pending on flask return
+      
     html_i3 = BeautifulSoup(data_i3, 'lxml')
     news_list_i3 = []
     for article_lxml in html_i3.find(id='nbTable').tbody.findAll(name='tr'):
@@ -137,11 +158,12 @@ def web_scrapping_news(code):
         news_dic['news_source'] = 'i3investor'
         news_list_i3.append(news_dic)
         logs.info(
-            f"title: {news_title},source: {news_dic['news_source']}, date: {news_dic['news_date']}\nlink: {news_dic['news_link']}, ")
+            "title: {news_title},source: {news_source}, date: {news_date}\nlink: {news_link}, " .format_map(news_dic))
     # return news_list
 
 
 if __name__ == '__main__':
-    # data = web_access()
-    # web_scrapping_stock(data)
-    web_scrapping_news('1023')
+    data = web_access()
+    web_scrapping_stock(data)
+    # web_scrapping_news('1023')
+    exit(0)
