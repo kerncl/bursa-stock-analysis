@@ -1,27 +1,47 @@
 import os
+import sys
 import csv
+import subprocess
+import threading
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from src.database.table import Company, Base
 
 
 class GenerateDB:
-    def __init__(self, csv_file):
+    """
+    Handling on SQL DB
+    """
+    def __init__(self, csv_file, echo=False):   # todo: may turn csv into global variable
+        """
+        Initialize and connect to DB
+        Args:
+            csv_file (path): csv full path
+            echo (bool): Echo on SQL engine
+        """
         # read csv
         with open(csv_file, 'r') as f:
             row_data = csv.DictReader(f)
             self.csv_data = [row for row in row_data]
 
         # Initialize db
-        db_file_path = os.path.abspath(r"../database/stock.db")
-        self.engine = create_engine(f"sqlite:///{db_file_path}", echo=True)
+        db_file_path = os.path.abspath(r"../database/stock.db") # todo: Pathlib to handle
+        self.engine = create_engine(f"sqlite:///{db_file_path}", echo=echo)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
-        Base.metadata.create_all(self.engine)
 
-    def stock_main_table(self):
+    def update_table(self):
+        """
+        Update DB table based on below 3 case:
+        1. Table doesnt exist
+        2. Company doesnt exist in the table
+        3. Company Market value increased
+        Returns:
+            None
+        """
         if not self.engine.dialect.has_table(self.engine, 'company'):
-            # table doesnt not exist
+            # company table doesnt not exist
+            Base.metadata.create_all(self.engine)  # Create all table
             insert_data_list = []
             for csv_row in self.csv_data:
                 insert_data = Company(
@@ -36,12 +56,12 @@ class GenerateDB:
             self.session.add_all(insert_data_list)
             self.session.commit()
         else:
-            # table exist
+            # company table exist
             print('Table already exists')
             for csv_row in self.csv_data:
                 data = self.session.query(Company).filter(Company.code == csv_row['Code']).one_or_none()
                 if not data:
-                    # row doesnt exists
+                    # Company doesnt exist
                     insert_data = Company(
                         code=csv_row['Code'],
                         company=csv_row['Company'],
@@ -54,6 +74,7 @@ class GenerateDB:
                     self.session.commit()
                     continue
                 if data.market_cap != float(csv_row['Market capital']):
+                    # Market value changes
                     self.session.query(Company)\
                         .filter(Company.code == csv_row['Code'])\
                         .filter(Company.company == csv_row['Company'])\
@@ -63,8 +84,50 @@ class GenerateDB:
                     continue
         self.session.close()
 
+    @staticmethod
+    def update_csv():
+        """
+        Staticmethod to update csv file
+        Returns:
+            None
+        """
+        def real_time_output(process):
+            for line in iter(process.stdout.readline, b''):
+                line = line.decode().rstrip()
+                print(line)
+
+        p = subprocess.Popen([sys.executable, 'generateData.py'],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
+        t = threading.Thread(target=real_time_output, args=(p,))
+        t.start()
+        p.wait()    # Waiting thread to executed finish
+        err = p.communicate()[1]  # wait until return code
+        if err:
+            err = err.decode()
+            print(f'Generate CSV processing error: {err}')
+        print(f'Executed finish with exitcode: {p.returncode}')
+        t.join()
+        pass
+
+    @classmethod
+    def renew_table(cls):
+        """
+        Clear existing table and update the table
+        Returns:
+            None
+        """
+        # cls.update_csv()  # update csv from staticmethod
+        self = cls(csv_file)    # execute __init__
+        if self.engine.dialect.has_table(self.engine, 'company'):
+            Base.metadata.drop_all(bind=self.engine, tables=[Company.__table__])
+        self.update_table()
+        pass
+
 
 if __name__ == '__main__':
     csv_file = os.path.abspath('stock_list.csv')
-    db = GenerateDB(csv_file)
-    db.stock_main_table()
+    # GenerateDB.update_csv()
+    GenerateDB.renew_table()
+    # db = GenerateDB(csv_file)
+    # db.stock_main_table()
