@@ -16,15 +16,16 @@ class Company(Base):
     market_cap = Column(FLOAT)
 
 
-class Stock_News(Base):
-    __tablename__ = 'stock news'
+class News(Base):
+    __tablename__ = 'news'
     code = Column(String, unique=True)
     comp = Column(String, ForeignKey('company.company'), primary_key=True)
-    news = Column(String)
+    news_klse = Column(String)
+    news_i3investor = Column(String)
     company = relationship('Company', back_populates='news')
 
 
-Company.news = relationship('Stock_News', back_populates='company')
+Company.news = relationship('News', back_populates='company')
 
 if __name__ == '__main__':
     engine = create_engine('sqlite:///template.db', echo=True)
@@ -39,7 +40,10 @@ if __name__ == '__main__':
         company_name='WINTONI GROUP BERHAD',
         category='Technology',
         market='Ace Market',
-        market_cap=17.96
+        market_cap=17.96,
+        news= [News(code='0141'
+                    , news_klse='https://www.klsescreener.com/v2/news/stock/0141',
+                    news_i3investor='https://klse.i3investor.com/servlets/stk/0141.jsp')]
     )
     session.add(data1)
     session.commit()
