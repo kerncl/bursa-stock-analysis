@@ -144,6 +144,7 @@ def web_scrapping_news(code):
     except Exception as e:
         logs.critical(f'{e}, Unable to access i3investor webpage')
         return []   # todo: pending on flask return
+      
     html_i3 = BeautifulSoup(data_i3, 'lxml')
     news_list_i3 = []
     for article_lxml in html_i3.find(id='nbTable').tbody.findAll(name='tr'):
