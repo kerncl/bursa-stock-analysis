@@ -127,14 +127,14 @@ class GenerateDB:
         # cls.update_csv()  # update csv from staticmethod
         self = cls(csv_file)    # execute __init__
         if self.engine.dialect.has_table(self.engine, 'company'):
-            Base.metadata.drop_all(bind=self.engine, tables=[Company.__table__])
+            Base.metadata.drop_all(bind=self.engine, tables=[Company.__table__, News.__table__])
         self.update_table()
-        pass
+        return cls
 
 
 if __name__ == '__main__':
     csv_file = os.path.abspath('stock_list.csv')
     GenerateDB.update_csv()
-    GenerateDB.renew_table()
+    db = GenerateDB.renew_table()
     # db = GenerateDB(csv_file)
     # db.stock_main_table()
