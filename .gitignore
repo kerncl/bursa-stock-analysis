@@ -3,6 +3,7 @@
 
 # Testing file
 template.db
+stock.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
