@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock</title>
+</head>
+<body>
+    <form action="{{ url_for('search') }}" method="post">
+        <fieldset>
+            <legend> Stock Form</legend>
+
+                <div style="font-size: 20px; font-weight: bold; margin-left: 150px">
+                    {{ form.company.label }}
+                    {{ form.company }}
+                    <br>
+
+                    {{ form.company_fullname.label }}
+                    {{ form.company_fullname }}
+                    <br>
+
+                    {{ form.category.label }}
+                    {{ form.category }}
+                    <br>
+
+                    {{ form.market.label }}
+                    {{ form.market }}
+                    <br>
+
+                    {{ form.submit }}
+                </div>
+        </fieldset>
+    </form>
+</body>
+</html>
