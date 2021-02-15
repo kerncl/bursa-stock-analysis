@@ -43,7 +43,7 @@ class GenerateDB:
             # company table doesnt not exist
             Base.metadata.create_all(self.engine)  # Create all table
             insert_data_list = []
-            for csv_row in self.csv_data:
+            for csv_row in self.csv_data:   # todo: Convert into Namedtuples ?
                 insert_data = Company(
                     code=csv_row['Code'],
                     company=csv_row['Company'],

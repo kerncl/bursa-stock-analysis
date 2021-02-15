@@ -74,7 +74,7 @@ def web_scrapping_stock(data):
     stock_tb_list = html.find(name='tbody').findAll(name='tr')
     csv_file_name = datetime.today().date().__str__() + '_stock_list.csv'
     with open('stock_list.csv', mode='w', newline='') as f:     # todo: generate csv at temp folder
-        writer = csv.writer(f)
+        writer = csv.writer(f)  # todo: revisit csv with generator method (ref: cookbook v3)
         writer.writerow(['Code', 'Company', 'Company name', 'Category', 'Market', 'EPS', 'NTA', 'PE', 'DY', 'ROE',
                          'Market capital'])
         for index, row_data in enumerate(stock_tb_list):
