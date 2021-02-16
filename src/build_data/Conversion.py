@@ -1,18 +1,33 @@
+# std library
 import os
 import sys
 import csv
 import subprocess
 import threading
+
+# 3rd party library
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
+
+# Internal Script
 from src.database.table import Base, Company, News
+
+
+# Initialize db
+db_file_path = os.path.abspath(r"../database/stock.db")  # todo: Pathlib to handle
+engine = create_engine(f"sqlite:///{db_file_path}", echo=False)
+Session = scoped_session(sessionmaker(autocommit=False,
+                                      autoflush=False,
+                                      bind=engine))
+# Session =  sessionmaker(bind=engine)
+# session = Session()
 
 
 class GenerateDB:
     """
     Handling on SQL DB
     """
-    def __init__(self, csv_file, echo=False):   # todo: may turn csv into global variable
+    def __init__(self, csv_file):   # todo: may turn csv into global variable
         """
         Initialize and connect to DB
         Args:
@@ -20,14 +35,15 @@ class GenerateDB:
             echo (bool): Echo on SQL engine
         """
         # read csv
-        with open(csv_file, 'r') as f:
+        with open(csv_file, 'r') as f:  # todo: can be done through method with generator
             row_data = csv.DictReader(f)
             self.csv_data = [row for row in row_data]
 
-        # Initialize db
-        db_file_path = os.path.abspath(r"../database/stock.db") # todo: Pathlib to handle
-        self.engine = create_engine(f"sqlite:///{db_file_path}", echo=echo)
-        Session = sessionmaker(bind=self.engine)
+        # # Initialize db
+        # db_file_path = os.path.abspath(r"../database/stock.db") # todo: Pathlib to handle
+        # self.engine = create_engine(f"sqlite:///{db_file_path}", echo=echo)
+        # Session = sessionmaker(bind=self.engine)
+        self.engine = engine
         self.session = Session()
 
     def update_table(self):

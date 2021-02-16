@@ -1,12 +1,20 @@
 from sqlalchemy import create_engine
 from sqlalchemy import String, Integer, Column, ForeignKey, FLOAT
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
 
-class Company(Base):
+class BaseTable:
+    __tablename__ = 'Template'
+    company = 'template'
+
+    def __repr__(self):
+        return f'<Table: {self.company}>'
+
+
+class Company(Base, BaseTable):
     __tablename__ = 'company'
     code = Column(String, primary_key=True)
     company = Column(String, unique=True)
@@ -16,7 +24,7 @@ class Company(Base):
     market_cap = Column(FLOAT)
 
 
-class News(Base):
+class News(Base, BaseTable):
     __tablename__ = 'news'
     code = Column(String, unique=True)
     comp = Column(String, ForeignKey('company.company'), primary_key=True)
@@ -29,7 +37,10 @@ Company.news = relationship('News', back_populates='company')
 
 if __name__ == '__main__':
     engine = create_engine('sqlite:///template.db', echo=True)
-    Session = sessionmaker(bind=engine)
+    # Session = sessionmaker(bind=engine)
+    Session = scoped_session(sessionmaker(autocommit=False,
+                                          autoflush=False,
+                                          bind=engine))
     session = Session()
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(engine)
