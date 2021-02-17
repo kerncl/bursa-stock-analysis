@@ -13,21 +13,11 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from src.database.table import Base, Company, News
 
 
-# Initialize db
-db_file_path = os.path.abspath(r"../database/stock.db")  # todo: Pathlib to handle
-engine = create_engine(f"sqlite:///{db_file_path}", echo=False)
-Session = scoped_session(sessionmaker(autocommit=False,
-                                      autoflush=False,
-                                      bind=engine))
-# Session =  sessionmaker(bind=engine)
-# session = Session()
-
-
 class GenerateDB:
     """
     Handling on SQL DB
     """
-    def __init__(self, csv_file):   # todo: may turn csv into global variable
+    def __init__(self, csv_file=None):   # todo: may turn csv into global variable
         """
         Initialize and connect to DB
         Args:
@@ -35,16 +25,26 @@ class GenerateDB:
             echo (bool): Echo on SQL engine
         """
         # read csv
-        with open(csv_file, 'r') as f:  # todo: can be done through method with generator
-            row_data = csv.DictReader(f)
-            self.csv_data = [row for row in row_data]
+        if csv_file:
+            with open(csv_file, 'r') as f:  # todo: can be done through method with generator
+                row_data = csv.DictReader(f)
+                self.csv_data = [row for row in row_data]
 
-        # # Initialize db
-        # db_file_path = os.path.abspath(r"../database/stock.db") # todo: Pathlib to handle
-        # self.engine = create_engine(f"sqlite:///{db_file_path}", echo=echo)
-        # Session = sessionmaker(bind=self.engine)
-        self.engine = engine
+    def __enter__(self):
+        # Initialize db
+        db_file_path = os.path.abspath(r"../database/stock.db")  # todo: Pathlib to handle
+        self.engine = create_engine(f"sqlite:///{db_file_path}", echo=False)
+        Session = scoped_session(sessionmaker(autocommit=False,
+                                              autoflush=False,
+                                              bind=self.engine))
+        # Session =  sessionmaker(bind=engine)
         self.session = Session()
+        return self.session
+        pass
+
+    def __exit__(self, *args, **kwargs):
+        self.session.close()
+        pass
 
     def update_table(self):
         """
@@ -105,7 +105,6 @@ class GenerateDB:
                     self.session.commit()
                     # UPDATE company set market_cap = new_market_cap WHERE Code==code AND Company == company AND Company name == company_name
                     continue
-        self.session.close()
 
     @staticmethod
     def update_csv():
@@ -122,7 +121,7 @@ class GenerateDB:
         p = subprocess.Popen([sys.executable, 'generateData.py'],
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
-        t = threading.Thread(target=real_time_output, args=(p,))
+        t = threading.Thread(target=real_time_output, args=(p,), name='log_info')
         t.start()
         p.wait()    # Waiting thread to executed finish
         err = p.communicate()[1]  # wait until return code
@@ -142,9 +141,11 @@ class GenerateDB:
         """
         # cls.update_csv()  # update csv from staticmethod
         self = cls(csv_file)    # execute __init__
+        self.__enter__()
         if self.engine.dialect.has_table(self.engine, 'company'):
             Base.metadata.drop_all(bind=self.engine, tables=[Company.__table__, News.__table__])
         self.update_table()
+        self.__exit__()
         return cls
 
 

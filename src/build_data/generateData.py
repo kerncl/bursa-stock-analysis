@@ -77,7 +77,7 @@ def web_scrapping_stock(data):
         writer = csv.writer(f)  # todo: revisit csv with generator method (ref: cookbook v3)
         writer.writerow(['Code', 'Company', 'Company name', 'Category', 'Market', 'EPS', 'NTA', 'PE', 'DY', 'ROE',
                          'Market capital'])
-        for index, row_data in enumerate(stock_tb_list):
+        for index, row_data in enumerate(stock_tb_list):    # todo: can improve the speed by threading / multiprocessing ?
             code = str(row_data.find(attrs={'title': 'Code'}).text)
             if re.search(r'[A-Z]', code) or len(code) > 4:
                 continue
