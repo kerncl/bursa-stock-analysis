@@ -7,12 +7,13 @@ from flask import render_template, request
 
 # Internal Script
 from src.web.backend.forms import StockForm
-from src.build_data.Conversion import Session
+from src.build_data.Conversion import GenerateDB
 from src.database.table import Company, News
 
 
 template_folder = pathlib.Path(__file__).parent.parent.joinpath('templates').__str__()
-app = Flask(__name__, template_folder=template_folder)
+static_folder = pathlib.Path(__file__).parent.parent.joinpath('static').__str__()
+app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
 app.secret_key = 'bursa'
 
 
@@ -37,21 +38,27 @@ def search():
         category = stockform.category.data
         market = stockform.market.data
         # SQL select query
-        session = Session()
-        # SELECT * FROM company WHERE company LIKE '%%' AND company_name LIKE '%airasia%' AND category LIKE '%%' AND market LIKE '%Main%';
-        stock_list = session.query(Company).filter(Company.company.like(company),
-                                                   Company.company_name.like(company_full_name),
-                                                   Company.category.like(category),
-                                                   Company.market.like(market)).all()
-        return render_template('home.html', form=stockform)
+        with GenerateDB() as session:
+            # SELECT * FROM company WHERE company LIKE '%%' AND company_name LIKE '%airasia%' AND category LIKE '%%' AND market LIKE '%Main%';
+            stock_list = session.query(Company).filter(Company.company.like(company),
+                                                       Company.company_name.like(company_full_name),
+                                                       Company.category.like(category),
+                                                       Company.market.like(market)).all()
+        return render_template('searchresult.html', form=stockform, result=stock_list)
     elif request.method == 'GET':   # when loaded page
         print('* Accessing GET Method')
         return render_template('home.html', form=stockform)
 
 
+@app.route('/stock/<code>', methods=['GET'])
+def stock(code):    # code obtain from url_for **kwargs
+    return f'<h>Stock Page: {code}</h>'
+
+
 @app.teardown_appcontext
-def close_session(exception=None):  # todo: close session
-    Session.remove()
+def loaded(exception=None):
+    # Session.remove()
+    print('Loaded Completed')
     pass
 
 

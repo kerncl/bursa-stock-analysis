@@ -1,0 +1,24 @@
+{% extends 'home.html' %}
+
+{% block searchresult %}
+<table>
+    <tr>
+        <th>Code</th>
+        <th>Company</th>
+        <th>Company Full Name</th>
+        <th>Category</th>
+        <th>Market</th>
+        <th>Market Capital(M)</th>
+    </tr>
+    {% for row in result %}
+        <tr>
+            <th><a href="{{ url_for('stock', code=row.code) }}"> {{ row.code }}</a></th>
+            <th>{{ row.company }}</th>
+            <th>{{ row.company_name }}</th>
+            <th>{{ row.category }}</th>
+            <th>{{ row.market }}</th>
+            <th>{{ row.market_cap }}</th>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}
