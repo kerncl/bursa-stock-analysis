@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='custom.css')}}"/>
+</head>
+<body>
+    <h1> KLSE News </h1>
+    <div>
+        <table>
+        <tr>
+            <th>News Title</th>
+            <th>Date</th>
+            <th>Source</th>
+        </tr>
+        {% for row1 in result.klse %}
+            <tr>
+                <th><a href="{{ row1.link }}" target="_blank">{{ row1.title }}</a></th>
+                <th>{{ row1.date }}</th>
+                <th>{{ row1.source }}</th>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+    <h1> i3Investor News </h1>
+    <div>
+        <table>
+        <tr>
+            <th>News Title</th>
+            <th>Date</th>
+            <th>Source</th>
+        </tr>
+        {% for row2 in result.i3 %}
+            <tr>
+                <th><a href="{{ row2.link }}" target="_blank">{{ row2.title }}</a></th>
+                <th>{{ row2.date }}</th>
+                <th>{{ row2.source }}</th>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

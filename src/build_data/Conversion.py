@@ -103,7 +103,6 @@ class GenerateDB:
                         .filter(Company.company_name == csv_row['Company name'])\
                         .update({'market_cap': float(csv_row['Market capital'])})
                     self.session.commit()
-                    # UPDATE company set market_cap = new_market_cap WHERE Code==code AND Company == company AND Company name == company_name
                     continue
 
     @staticmethod

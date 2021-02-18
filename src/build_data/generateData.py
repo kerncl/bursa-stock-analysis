@@ -111,30 +111,32 @@ def web_scrapping_news(code):
     """
     # todo: merge all news into one block of code
     # KLSE
+    news_dic_list = {}
     klse_news_url = f'{klse_url}/v2/news/stock/{code}'
     try:
         req = Request(url=klse_news_url, headers={'user-agent': 'my-app'})
         data = urlopen(req)
     except Exception as e:
-        logs.critical(f'{e}, Unable to access KLSE webpage')
+        logs.critical(f'{e}, Unable to access KLSE webpage')    # todo: handling on log when import module
         return []   # todo: pending on flask return
     html = BeautifulSoup(data, 'lxml')
-    news_list = []
+    news_klse_list = []
     for article_lxml in html.findAll(name='div', attrs={'class': 'article flex-1'}):
-        news_dic = {}
+        news_dic_klse = {}
         news_lxml = article_lxml.find(name='div', attrs={'class': 'item-title'})
         date_lxml = article_lxml.find(name='div', attrs={'class': 'item-title-secondary subtitle'}).findAll(name='span')
         news_title = news_lxml.text
         if re.search("[\u4e00-\u9FFF]", news_title) or re.search(r"\\u", news_title):   # chinese news
             continue
-        news_dic['news_title'] = news_title
-        news_dic['news_link'] = klse_url + news_lxml.a.attrs['href']
-        news_dic['news_source'] = date_lxml[0].text
-        news_dic['news_date'] = date_lxml[1].attrs['data-date'].split(' ')[0]
-        logs.info("title: {news_title},source: {news_source}, date: {news_date}\nlink: {news_link}, " .format_map(news_dic))
-        news_list.append(news_dic)
+        news_dic_klse['title'] = news_title
+        news_dic_klse['link'] = klse_url + news_lxml.a.attrs['href']
+        news_dic_klse['source'] = date_lxml[0].text
+        news_dic_klse['date'] = date_lxml[1].attrs['data-date'].split(' ')[0]
+        # logs.info("title: {news_title},source: {news_source}, date: {news_date}\nlink: {news_link}, " .format_map(news_dic))
+        news_klse_list.append(news_dic_klse)
+    news_dic_list['klse'] = news_klse_list
 
-    logs.info('\n\n\n\n\n\nI3INVESOTOR NEWS')
+    # logs.info('\n\n\n\n\n\nI3INVESOTOR NEWS')
     # i3investor
     i3investor_url = 'https://klse.i3investor.com/'
     i3investor_news_url = f'{i3investor_url}servlets/stk/{code}.jsp'
@@ -148,18 +150,19 @@ def web_scrapping_news(code):
     html_i3 = BeautifulSoup(data_i3, 'lxml')
     news_list_i3 = []
     for article_lxml in html_i3.find(id='nbTable').tbody.findAll(name='tr'):
-        news_dic = {}
+        news_dic_i3 = {}
         news_title = article_lxml.findAll(name='td')[1].text
         if re.search("[\u4e00-\u9FFF]", news_title) or re.search(r"\\u", news_title):   # chinese news
             continue
-        news_dic['news_date'] = article_lxml.findAll(name='td')[0].text
-        news_dic['news_title'] = news_title
-        news_dic['news_link'] = i3investor_url + article_lxml.findAll(name='td')[1].a.attrs['href']
-        news_dic['news_source'] = 'i3investor'
-        news_list_i3.append(news_dic)
-        logs.info(
-            "title: {news_title},source: {news_source}, date: {news_date}\nlink: {news_link}, " .format_map(news_dic))
-    # return news_list
+        news_dic_i3['date'] = article_lxml.findAll(name='td')[0].text
+        news_dic_i3['title'] = news_title
+        news_dic_i3['link'] = i3investor_url + article_lxml.findAll(name='td')[1].a.attrs['href']
+        news_dic_i3['source'] = 'i3investor'
+        news_list_i3.append(news_dic_i3)
+        # logs.info(
+        #     "title: {news_title},source: {news_source}, date: {news_date}\nlink: {news_link}, " .format_map(news_dic))
+    news_dic_list['i3'] = news_list_i3
+    return news_dic_list
 
 
 if __name__ == '__main__':
