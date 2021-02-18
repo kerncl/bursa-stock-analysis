@@ -31,11 +31,15 @@
             <th>Date</th>
             <th>Source</th>
         </tr>
-        {% for row2 in result.i3 %}
+        {% for row2 in result.i3investor %}
             <tr>
                 <th><a href="{{ row2.link }}" target="_blank">{{ row2.title }}</a></th>
                 <th>{{ row2.date }}</th>
                 <th>{{ row2.source }}</th>
+            </tr>
+        {% else %}
+            <tr>
+                <th>Sorry sources unavailable</th>
             </tr>
         {% endfor %}
         </table>
