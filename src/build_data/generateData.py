@@ -16,6 +16,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 klse_url = 'https://www.klsescreener.com'
+i3investor_url = 'https://klse.i3investor.com/'
 
 format = logging.Formatter(fmt='%(asctime)s [%(levelname)s]: %(message)s', datefmt='%Y%m%d-%H:%M:%S')
 
@@ -107,61 +108,57 @@ def web_scrapping_news(code):
         code (int): Company Code (4 digit)
 
     Returns:
-        list
+        dict list
     """
-    # todo: merge all news into one block of code
-    # KLSE
-    news_dic_list = {}
-    klse_news_url = f'{klse_url}/v2/news/stock/{code}'
-    try:
-        req = Request(url=klse_news_url, headers={'user-agent': 'my-app'})
-        data = urlopen(req)
-    except Exception as e:
-        logs.critical(f'{e}, Unable to access KLSE webpage')    # todo: handling on log when import module
-        return []   # todo: pending on flask return
-    html = BeautifulSoup(data, 'lxml')
-    news_klse_list = []
-    for article_lxml in html.findAll(name='div', attrs={'class': 'article flex-1'}):
-        news_dic_klse = {}
-        news_lxml = article_lxml.find(name='div', attrs={'class': 'item-title'})
-        date_lxml = article_lxml.find(name='div', attrs={'class': 'item-title-secondary subtitle'}).findAll(name='span')
-        news_title = news_lxml.text
-        if re.search("[\u4e00-\u9FFF]", news_title) or re.search(r"\\u", news_title):   # chinese news
-            continue
-        news_dic_klse['title'] = news_title
-        news_dic_klse['link'] = klse_url + news_lxml.a.attrs['href']
-        news_dic_klse['source'] = date_lxml[0].text
-        news_dic_klse['date'] = date_lxml[1].attrs['data-date'].split(' ')[0]
-        # logs.info("title: {news_title},source: {news_source}, date: {news_date}\nlink: {news_link}, " .format_map(news_dic))
-        news_klse_list.append(news_dic_klse)
-    news_dic_list['klse'] = news_klse_list
 
-    # logs.info('\n\n\n\n\n\nI3INVESOTOR NEWS')
-    # i3investor
-    i3investor_url = 'https://klse.i3investor.com/'
-    i3investor_news_url = f'{i3investor_url}servlets/stk/{code}.jsp'
-    try:
-        req_i3 = Request(url=i3investor_news_url, headers={'user-agent': 'my-app'})
-        data_i3 = urlopen(req_i3)
-    except Exception as e:
-        logs.critical(f'{e}, Unable to access i3investor webpage')
-        return []   # todo: pending on flask return
-      
-    html_i3 = BeautifulSoup(data_i3, 'lxml')
-    news_list_i3 = []
-    for article_lxml in html_i3.find(id='nbTable').tbody.findAll(name='tr'):
-        news_dic_i3 = {}
-        news_title = article_lxml.findAll(name='td')[1].text
-        if re.search("[\u4e00-\u9FFF]", news_title) or re.search(r"\\u", news_title):   # chinese news
-            continue
-        news_dic_i3['date'] = article_lxml.findAll(name='td')[0].text
-        news_dic_i3['title'] = news_title
-        news_dic_i3['link'] = i3investor_url + article_lxml.findAll(name='td')[1].a.attrs['href']
-        news_dic_i3['source'] = 'i3investor'
-        news_list_i3.append(news_dic_i3)
-        # logs.info(
-        #     "title: {news_title},source: {news_source}, date: {news_date}\nlink: {news_link}, " .format_map(news_dic))
-    news_dic_list['i3'] = news_list_i3
+    news_dic_list = {}
+    for platform in ('klse', 'i3investor'):
+        platform_url = globals().get(platform + '_url')
+        if platform == 'klse':
+            platform_news_url = f'{platform_url}/v2/news/stock/{code}'
+        elif platform == 'i3investor':
+            platform_news_url = f'{platform_url}servlets/stk/{code}.jsp'
+
+        try:
+            req = Request(url=platform_news_url, headers={'user-agent':'my-app'})
+            data = urlopen(req)
+        except Exception as e:
+            print(f'CRITIAL unable to access {platform_news_url} webpage')
+
+        html = BeautifulSoup(data, 'lxml')
+        news_list = []
+
+        if platform == 'klse' and html.text:
+            for article_lxml in html.findAll(name='div', attrs={'class': 'article flex-1'}):
+                news_dic = {}
+                news_lxml = article_lxml.find(name='div', attrs={'class': 'item-title'})
+                date_lxml = article_lxml.find(name='div', attrs={'class': 'item-title-secondary subtitle'}).findAll(
+                    name='span')
+                news_title = news_lxml.text
+                if re.search("[\u4e00-\u9FFF]", news_title) or re.search(r"\\u", news_title):  # chinese news
+                    continue
+                news_dic['title'] = news_title
+                news_dic['link'] = klse_url + news_lxml.a.attrs['href']
+                news_dic['source'] = date_lxml[0].text
+                news_dic['date'] = date_lxml[1].attrs['data-date'].split(' ')[0]
+                logs.info("title: {title},source: {source}, date: {date}\nlink: {link}, " .format_map(news_dic))    # todo: log handling when import module
+                news_list.append(news_dic)
+        elif platform == 'i3investor' and html.text:
+            for article_lxml in html.find(id='nbTable').tbody.findAll(name='tr'):
+                news_dic = {}
+                news_title = article_lxml.findAll(name='td')[1].text
+                if re.search("[\u4e00-\u9FFF]", news_title) or re.search(r"\\u", news_title):  # chinese news
+                    continue
+                news_dic['date'] = article_lxml.findAll(name='td')[0].text
+                news_dic['title'] = news_title
+                news_dic['link'] = i3investor_url + article_lxml.findAll(name='td')[1].a.attrs['href']
+                news_dic['source'] = 'i3investor'
+                news_list.append(news_dic)
+                logs.info("title: {title},source: {source}, date: {date}\nlink: {link}, " .format_map(news_dic))    # todo: log handling when import module
+        else:
+            logs.warning(f'No source news found: {platform_news_url}')
+        news_dic_list[platform] = news_list.copy()
+
     return news_dic_list
 
 

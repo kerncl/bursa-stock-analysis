@@ -30,12 +30,8 @@ def search():
     stockform = StockForm(request.form)
     if request.method == 'POST':  # when submit has been clicked
         print('* Accessing POST Method')
-        print(f'User enter:\nCompany: {stockform.company.data}\n '
-              f'Company full name: {stockform.company_fullname.data}\n'
-              f'Category: {stockform.category.data}\n'
-              f'Market: {stockform.market.data}')  # return data
-        company = '%' + stockform.company.data + '%'  # todo: can be improve by using request.form generate with setattr()
-        company_full_name = '%' + stockform.company_fullname.data + '%'
+        company = '%' + stockform.company.data + '%'    # todo: can be improve by using request.form generate with setattr()
+        company_full_name = '%' + stockform.company_fullname.data + '%'     # todo: will be move to backend script
         category = stockform.category.data
         market = stockform.market.data
         # SQL select query
@@ -62,7 +58,6 @@ def stock(code):  # code obtain from url_for **kwargs
         print(news_list)
     pass
     return render_template('stock.html', result=news)
-    # return f'<h>Stock Page: {code}</h>'
 
 
 @app.teardown_appcontext
