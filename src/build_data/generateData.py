@@ -110,6 +110,7 @@ def web_scrapping_news(code):
     Returns:
         dict list
     """
+
     news_dic_list = {}
     for platform in ('klse', 'i3investor'):
         platform_url = globals().get(platform + '_url')
@@ -157,6 +158,7 @@ def web_scrapping_news(code):
         else:
             logs.warning(f'No source news found: {platform_news_url}')
         news_dic_list[platform] = news_list.copy()
+
     return news_dic_list
 
 
