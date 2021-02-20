@@ -165,7 +165,7 @@ def web_scrapping_news(code):
 
     return news_dic_list
 
-
+  
 def web_scrapping_stockprice(code):
     # todo: migrate to another script using class
     finance_url = f'https://klse.i3investor.com/servlets/stk/fin/{code}.jsp'
