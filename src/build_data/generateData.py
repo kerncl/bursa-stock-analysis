@@ -14,6 +14,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+# Internal Script
+from src.tools.error import *
+
 
 klse_url = 'https://www.klsescreener.com'
 i3investor_url = 'https://klse.i3investor.com/'
@@ -47,15 +50,16 @@ def web_access():
     driver = webdriver.Chrome(executable_path=executable_path, chrome_options=options)
     driver.get(klse_url)
     logs.info('Loading KLSE web page')
-    xpath_submit = "//*[@id='submit']"
-    submit_button = driver.find_element_by_xpath(xpath=xpath_submit)
+    try:
+        xpath_submit = "//input[@id='submit']"
+        submit_button = driver.find_element_by_xpath(xpath=xpath_submit)
+    except Exception as e:
+        raise InvalidXpathException(f'Invalid Xpath: {e}')
     submit_button.click()
     try:
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "table-responsive")))
     except Exception as e:
-        logs.error(f'Error: {e}')
-        logs.error('Web loading too slow .... out of time ... exiting code')
-        sys.exit(1)
+        raise WebLoadException(f'Web loading too slow .... out of time ... exiting code: {e}')
     data = driver.page_source
     logs.info('Done extracting source ... closing chrome')
     driver.close()
@@ -110,7 +114,7 @@ def web_scrapping_news(code):
     Returns:
         dict list
     """
-
+    #   todo: migrate to another script using class
     news_dic_list = {}
     for platform in ('klse', 'i3investor'):
         platform_url = globals().get(platform + '_url')
@@ -122,8 +126,8 @@ def web_scrapping_news(code):
         try:
             req = Request(url=platform_news_url, headers={'user-agent':'my-app'})
             data = urlopen(req)
-        except Exception as e:
-            print(f'CRITIAL unable to access {platform_news_url} webpage')
+        except Exception:
+            raise WebAccessException(f'unable to access {platform_news_url} webpage')
 
         html = BeautifulSoup(data, 'lxml')
         news_list = []
@@ -161,9 +165,46 @@ def web_scrapping_news(code):
 
     return news_dic_list
 
+  
+def web_scrapping_stockprice(code):
+    # todo: migrate to another script using class
+    finance_url = f'https://klse.i3investor.com/servlets/stk/fin/{code}.jsp'
+    try:
+        req = Request(url=finance_url, headers={'user-agent':'my-app'})
+        data = urlopen(req)
+    except Exception:
+        raise WebAccessException(f'unable to access {finance_url} webpage')
+    html = BeautifulSoup(data, 'lxml')
+    table_list = html.find(name='table', id='stockhdr').find_all(name='td')
+    stock = {}
+    for key, value in zip(table_list[:len(table_list)//2], table_list[len(table_list)//2:]):
+        stock[key.text.rstrip().strip()] = value.text.rstrip().strip()
+    return stock
+
+
+def web_scrapping_finance(code):
+    # todo: migrate to another script using class
+    finance_url = f'https://klse.i3investor.com/servlets/stk/fin/{code}.jsp'
+    try:
+        req = Request(url=finance_url, headers={'user-agent':'my-app'})
+        data = urlopen(req)
+    except Exception:
+        raise WebAccessException(f'unable to access {finance_url} webpage')
+    html = BeautifulSoup(data, 'lxml')
+    table_content = html.find(name='table', id='financialResultTable')
+    for row in table_content.findAll(name='tr')[1:]:
+        for key in row.findAll(name='th'):
+            print(key.text)
+        for value in row.finaAll(name='td'):
+            print(value)
+    quarter_table = html.find(name='tbody', id='tablebody').findAll(name='tr')
+    pass
+
 
 if __name__ == '__main__':
     data = web_access()
     web_scrapping_stock(data)
     # web_scrapping_news('1023')
+    # web_scrapping_stockprice('1155')
+    # web_scrapping_finance('1155')
     exit(0)
