@@ -201,6 +201,41 @@ def web_scrapping_finance(code):
     pass
 
 
+def web_scrapping_stockprice(code):
+    # todo: migrate to another script using class
+    finance_url = f'https://klse.i3investor.com/servlets/stk/fin/{code}.jsp'
+    try:
+        req = Request(url=finance_url, headers={'user-agent':'my-app'})
+        data = urlopen(req)
+    except Exception:
+        raise WebAccessException(f'unable to access {finance_url} webpage')
+    html = BeautifulSoup(data, 'lxml')
+    table_list = html.find(name='table', id='stockhdr').find_all(name='td')
+    stock = {}
+    for key, value in zip(table_list[:len(table_list)//2], table_list[len(table_list)//2:]):
+        stock[key.text.rstrip().strip()] = value.text.rstrip().strip()
+    return stock
+
+
+def web_scrapping_finance(code):
+    # todo: migrate to another script using class
+    finance_url = f'https://klse.i3investor.com/servlets/stk/fin/{code}.jsp'
+    try:
+        req = Request(url=finance_url, headers={'user-agent':'my-app'})
+        data = urlopen(req)
+    except Exception:
+        raise WebAccessException(f'unable to access {finance_url} webpage')
+    html = BeautifulSoup(data, 'lxml')
+    table_content = html.find(name='table', id='financialResultTable')
+    for row in table_content.findAll(name='tr')[1:]:
+        for key in row.findAll(name='th'):
+            print(key.text)
+        for value in row.finaAll(name='td'):
+            print(value)
+    quarter_table = html.find(name='tbody', id='tablebody').findAll(name='tr')
+    pass
+
+
 if __name__ == '__main__':
     data = web_access()
     web_scrapping_stock(data)
