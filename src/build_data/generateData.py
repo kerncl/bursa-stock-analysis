@@ -171,5 +171,4 @@ if __name__ == '__main__':
     web_scrapping_stock(data)
     # web_scrapping_news('1023')
     # web_scrapping_stockprice('1155')
-    # web_scrapping_finance('1155')
     exit(0)
