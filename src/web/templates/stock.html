@@ -6,7 +6,49 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='custom.css')}}"/>
 </head>
 <body>
-    <h1> KLSE News </h1>
+    <h1> Stock {{ price.name }}</h1>
+    <h3> Last Price: {{ price['Last Price'] }} </h3>
+    <h3> Change: {{ price["Today's Change"] }} </h3>
+    <h3> Day Range: {{ price["Day's Range"] }} </h3>
+    <h3> Trading Volume: {{ price['Trading Volume'] }}</h3>
+    <h2> Finance Result </h2>
+    <table>
+        <tr>
+            <th>Annual Report</th>
+            <th>Announcement Date</th>
+            <th>Quarter Report</th>
+            <th>Revenue</th>
+            <th>Profit before Tax</th>
+            <th>Net Profit</th>
+            <th>Div</th>
+            <th>NP Margin</th>
+            <th>ROE</th>
+            <th>EPS</th>
+            <th>DPS</th>
+            <th>QoQ</th>
+            <th>YoY</th>
+        </tr>
+        {% for row in finance %}
+            <tr>
+                <th>{{ row['F.Y.'] }}</th>
+                <th>{{ row['Ann. Date'] }}</th>
+                <th>{{ row['Quarter'] }}</th>
+                <th>{{ row['Revenue'] }}</th>
+                <th>{{ row['PBT'] }}</th>
+                <th>{{ row['NP'] }}</th>
+                <th>{{ row['Div'] }}</th>
+                <th>{{ row['NP Margin'] }}</th>
+                <th>{{ row['ROE'] }}</th>
+                <th>{{ row['EPS'] }}</th>
+                <th>{{ row['DPS'] }}</th>
+                <th>{{ row['QoQ'] }}</th>
+                <th>{{ row['YoY'] }}</th>
+            </tr>
+        {% endfor %}
+        <tr></tr>
+    </table>
+    <br>
+    <h2> KLSE News </h2>
     <div>
         <table>
         <tr>

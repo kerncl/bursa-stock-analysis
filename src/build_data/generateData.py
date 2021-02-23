@@ -180,6 +180,7 @@ def web_scrapping_stockprice(code):
     stock = {}
     for key, value in zip(table_list[:len(table_list)//2], table_list[len(table_list)//2:]):
         stock[key.text.rstrip().strip()] = value.text.rstrip().strip()
+    stock['name'] = html.find(name='span', attrs={'class':'stname'}).text
     return stock
 
 
@@ -208,6 +209,6 @@ if __name__ == '__main__':
     # data = web_access()
     # web_scrapping_stock(data)
     # web_scrapping_news('1023')
-    # web_scrapping_stockprice('1155')
-    web_scrapping_finance('1155')
+    web_scrapping_stockprice('1155')
+    # web_scrapping_finance('1155')
     exit(0)
