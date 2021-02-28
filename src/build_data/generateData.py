@@ -5,7 +5,6 @@ import re
 import csv
 from datetime import datetime
 from urllib.request import Request, urlopen
-from collections import OrderedDict
 
 # 3rd party library
 from bs4 import BeautifulSoup
@@ -171,4 +170,5 @@ if __name__ == '__main__':
     web_scrapping_stock(data)
     # web_scrapping_news('1023')
     # web_scrapping_stockprice('1155')
+    # web_scrapping_finance('1155')
     exit(0)
