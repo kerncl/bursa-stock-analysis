@@ -1,12 +1,10 @@
 # default library
 import logging
 import os
-import sys
 import re
 import csv
 from datetime import datetime
 from urllib.request import Request, urlopen
-from collections import OrderedDict
 
 # 3rd party library
 from bs4 import BeautifulSoup
@@ -167,48 +165,10 @@ def web_scrapping_news(code):
     return news_dic_list
 
 
-def web_scrapping_stockprice(code):
-    # todo: migrate to another script using class
-    finance_url = f'https://klse.i3investor.com/servlets/stk/fin/{code}.jsp'
-    try:
-        req = Request(url=finance_url, headers={'user-agent':'my-app'})
-        data = urlopen(req)
-    except Exception:
-        raise WebAccessException(f'unable to access {finance_url} webpage')
-    html = BeautifulSoup(data, 'lxml')
-    table_list = html.find(name='table', id='stockhdr').find_all(name='td')
-    stock = {}
-    for key, value in zip(table_list[:len(table_list)//2], table_list[len(table_list)//2:]):
-        stock[key.text.rstrip().strip()] = value.text.rstrip().strip()
-    stock['name'] = html.find(name='span', attrs={'class':'stname'}).text
-    return stock
-
-
-def web_scrapping_finance(code):
-    # todo: migrate to another script using class
-    finance_url = f'https://klse.i3investor.com/servlets/stk/fin/{code}.jsp'
-    try:
-        req = Request(url=finance_url, headers={'user-agent':'my-app'})
-        data = urlopen(req)
-    except Exception:
-        raise WebAccessException(f'unable to access {finance_url} webpage')
-    html = BeautifulSoup(data, 'lxml')
-    table_content = html.find(name='table', id='financialResultTable')
-    quarter_report_list = []
-    finance_data = OrderedDict()    # todo: Wrote a custom container class
-    for row in table_content.findAll(name='tr')[1:]:
-        for key in row.findAll(name='th'):  # obtain key
-            finance_data.update({key.text.rstrip().strip(): None})
-        for key, value in zip(finance_data.keys(), row.findAll(name='td')): # obtain data
-            finance_data[key] = value.text.rstrip().strip()
-        quarter_report_list.append(finance_data.copy()) # todo: convert it to json type
-    return quarter_report_list
-
-
 if __name__ == '__main__':
-    # data = web_access()
-    # web_scrapping_stock(data)
+    data = web_access()
+    web_scrapping_stock(data)
     # web_scrapping_news('1023')
-    web_scrapping_stockprice('1155')
+    # web_scrapping_stockprice('1155')
     # web_scrapping_finance('1155')
     exit(0)
