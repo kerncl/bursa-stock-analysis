@@ -1,6 +1,7 @@
 # default library
 from collections import OrderedDict
 from urllib.request import Request, urlopen
+from pprint import pprint
 
 # 3rd party library
 from bs4 import BeautifulSoup
@@ -34,22 +35,72 @@ class Stock:
 
     def finance_result(self):
         table_content = self.html.find(name='table', id='financialResultTable')
-        quarter_report_list = []
+        self.quarter_report_list = []
+        temp_key = []
         finance_data = OrderedDict()  # todo: wrote a custom container class
         for row in table_content.findAll(name='tr')[1:]:
             for key in row.findAll(name='th'):
-                finance_data.update({key.text.rstrip().strip(): None})
-            for key, value in zip(finance_data.keys(), row.findAll(name='td')):
-                finance_data[key] = value.text.rstrip().strip()
-            quarter_report_list.append(finance_data.copy())
-        return quarter_report_list
+                temp_key.append(key.text.rstrip().strip())
+            for key, value in zip(temp_key, row.findAll(name='td')):
+                if key in ('F.Y.', 'Ann. Date', 'Quarter', 'Revenue',
+                               'PBT', 'NP', 'EOQ DY', 'NP Margin',
+                               'ROE', 'DPS', 'QoQ', 'YoY', 'EPS'):
+                    finance_data[key] = value.text.rstrip().strip()
+            if finance_data:
+                self.quarter_report_list.append(finance_data.copy())
+        return self.quarter_report_list
         pass
 
     def _to_json(self):
+        temp_annual_report = ''
+        json_list = []
+        json_yearly = OrderedDict()
+        for row in self.quarter_report_list:
+            if row['F.Y.'] != temp_annual_report:
+                json_yearly.clear()
+                temp_annual_report = row['F.Y.']
+                json_yearly['Annual Report'] = temp_annual_report
+                json_yearly['Quarter Report'] = []
+            json_yearly['Quarter Report'].append({**row})
+            json_list.append(json_yearly.copy())
+        pprint(json_list, indent=4)
         pass
+# [
+#     {
+#         'Annual Report':'31-Dec-2020',
+#         'Quarter Report': [
+#             {
+#                 'Quarter': 'first',
+#                 'ROE':10,
+#                 'DIV':5
+#             },
+#             {
+#                 'Quarter': 'second',
+#                 'ROE':10,
+#                 'DIV':5
+#             },
+#         ]
+#     },
+#     {
+#         'Annual Report':'31-Dec-2019',
+#         'Quarter Report': [
+#             {
+#                 'Quarter': 'first',
+#                 'ROE':10,
+#                 'DIV':5
+#             },
+#             {
+#                 'Quarter': 'second',
+#                 'ROE':10,
+#                 'DIV':5
+#             },
+#         ]
+#     }
+# ]
 
 
 if __name__ == '__main__':
     stock = Stock('1155')
-    print(stock.stock_price())
-    print(stock.finance_result())
+    # print(stock.stock_price())
+    stock.finance_result()
+    stock._to_json()
