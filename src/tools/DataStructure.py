@@ -35,7 +35,7 @@ if __name__ == '__main__':
         def __init__(self, code):
             self.code = code
 
-test1 = Test('1234')
-# test2 = Test('abcd')
-# test3 = Test('123')
+    test1 = Test('1234')
+    # test2 = Test('abcd')
+    # test3 = Test('123')
 

@@ -9,7 +9,8 @@ from flask import render_template, request
 from src.web.backend.forms import StockForm
 from src.build_data.Conversion import GenerateDB
 from src.database.table import Company, News
-from src.build_data.generateData import web_scrapping_news, web_scrapping_finance, web_scrapping_stockprice
+from src.build_data.generateData import web_scrapping_news
+from src.build_data.finance import Stock
 
 
 template_folder = pathlib.Path(__file__).parent.parent.joinpath('templates').__str__()
@@ -53,14 +54,15 @@ def stock(code):  # code obtain from url_for **kwargs
         news_data = session.query(News).filter(News.code == code).one_or_none()
         print(news_data)
     news = web_scrapping_news(code)
-    for platform, news_list in news.items():
-        print(platform)
-        print(news_list)
-    pass
+    # for platform, news_list in news.items():
+    #     print(platform)
+    #     print(news_list)
+    # pass
+    stock_data = Stock(code)
     return render_template('stock.html',
                            result=news,
-                           finance=web_scrapping_finance(code),
-                           price=web_scrapping_stockprice(code))
+                           finance=stock_data.finance_result(),
+                           price=stock_data.stock_price())
 
 
 @app.teardown_appcontext
