@@ -158,6 +158,39 @@ class Stock:
             json_list.append(json_yearly.copy())
         pprint(json_list, indent=4)
         pass
+# json format
+# [
+#     {
+#         'Annual Report':'31-Dec-2020',
+#         'Quarter Report': [
+#             {
+#                 'Quarter': 'first',
+#                 'ROE':10,
+#                 'DIV':5
+#             },
+#             {
+#                 'Quarter': 'second',
+#                 'ROE':10,
+#                 'DIV':5
+#             },
+#         ]
+#     },
+#     {
+#         'Annual Report':'31-Dec-2019',
+#         'Quarter Report': [
+#             {
+#                 'Quarter': 'first',
+#                 'ROE':10,
+#                 'DIV':5
+#             },
+#             {
+#                 'Quarter': 'second',
+#                 'ROE':10,
+#                 'DIV':5
+#             },
+#         ]
+#     }
+# ]
 
 
 # json format
