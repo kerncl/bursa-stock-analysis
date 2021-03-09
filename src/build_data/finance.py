@@ -158,6 +158,8 @@ class Stock:
             json_list.append(json_yearly.copy())
         pprint(json_list, indent=4)
         pass
+
+
 # json format
 # [
 #     {
