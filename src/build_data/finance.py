@@ -1,7 +1,9 @@
 # default library
 from collections import OrderedDict
+from collections.abc import MutableMapping
 from urllib.request import Request, urlopen
 from pprint import pprint
+import re
 
 # 3rd party library
 from bs4 import BeautifulSoup
@@ -9,6 +11,94 @@ from bs4 import BeautifulSoup
 # Internal Script
 from src.tools.error import *
 from src.tools.DataStructure import *
+
+
+class FinanceData(MutableMapping):
+
+    def __init__(self, dic=None):
+        if not dic:
+            dic = {}
+        self.__data = OrderedDict(dic)
+
+    def __repr__(self):
+        return self.__data.__repr__()
+
+    def __str__(self):
+        return self.__data.__str__
+
+    def __getitem__(self, item):
+        return self.__data[item]
+
+    def __setitem__(self, key, value):
+        if not re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}', key):
+            raise KeyError("Invalid Key format, correct format should be DD-MMM-YYYY")  # todo: custom exception
+        if not isinstance(value, list):
+            raise KeyError("Invalid Value format")
+        if key in self.__data:
+            self.__data[key].append(value)
+        else:
+            self.__data[key] = value
+
+    def __delitem__(self, key):
+        del self.__data[key]
+
+    def __iter__(self):
+        yield from self.__data
+
+    def __len__(self):
+        return len(self.__data)
+
+    def pop(self, key):
+        self.__data.pop(key)
+
+    def clear(self) -> None:
+        self.__data.clear()
+
+    def __copy__(self):
+        return self.__data.copy()
+
+    def update(self, *args, **kwargs) -> None:
+        if len(args) > 1:
+            raise TypeError(f'Expected 1 args, but received {len(args)}')
+        if args:
+            for annual_report, quarter in dict(args[0]):
+                self[annual_report] = quarter
+        for annual_report, quarter in kwargs.items():
+            self[annual_report] = quarter
+            # self.__data[annual_report] = quarter
+
+    @staticmethod
+    def parser(**kwargs):
+        finance_data = {}
+        report_data = {}
+        annual_report = kwargs.pop('F.Y.')
+        quarter = kwargs.pop('#')
+        report_data.update({f'quarter {quarter}': kwargs})
+        finance_data.update({annual_report: [report_data]})
+        return finance_data
+
+
+# {
+#     '31-Dec-2020':[
+#                 'quarter 1': {
+#                         'ROE': 10,
+#                             ...
+#                     },
+#                 'quarter 2':{
+#                         'ROE': 10,
+#                           ...
+#                         }],
+#     '31-Aug-2020':[
+#                 'quarter 1':{
+#                         'ROE': 10,
+#                             ...
+#                     },
+#                 'quarter 2':{
+#                         'ROE': 10,
+#                           ...
+#                         }],
+#         ...
+# }
 
 
 class Stock:
@@ -38,15 +128,18 @@ class Stock:
         self.quarter_report_list = []
         temp_key = []
         finance_data = OrderedDict()  # todo: wrote a custom container class
+        finance_data_test = FinanceData()
         for row in table_content.findAll(name='tr')[1:]:
             for key in row.findAll(name='th'):
-                temp_key.append(key.text.rstrip().strip())
+                temp_key.append(key.text.rstrip().strip())  # Obtain key in list
             for key, value in zip(temp_key, row.findAll(name='td')):
                 if key in ('F.Y.', 'Ann. Date', 'Quarter', 'Revenue',
-                               'PBT', 'NP', 'EOQ DY', 'NP Margin',
-                               'ROE', 'DPS', 'QoQ', 'YoY', 'EPS'):
+                           'PBT', 'NP', 'EOQ DY', 'NP Margin',
+                           'ROE', 'DPS', 'QoQ', 'YoY', 'EPS', '#'):
                     finance_data[key] = value.text.rstrip().strip()
             if finance_data:
+                json_format = FinanceData.parser(**finance_data)
+                finance_data_test.update(**json_format)
                 self.quarter_report_list.append(finance_data.copy())
         return self.quarter_report_list
         pass
@@ -65,6 +158,8 @@ class Stock:
             json_list.append(json_yearly.copy())
         pprint(json_list, indent=4)
         pass
+
+
 # json format
 # [
 #     {
