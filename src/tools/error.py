@@ -10,6 +10,10 @@ class ScriptException(EdarException):
     pass
 
 
+class FinancialException(KeyError, ValueError):
+    pass
+
+
 class WebLoadException(WebException):
     pass
 
@@ -19,4 +23,8 @@ class WebAccessException(WebException):
 
 
 class InvalidXpathException(WebException):
+    pass
+
+
+class FinancialDataErrorException(FinancialException):
     pass

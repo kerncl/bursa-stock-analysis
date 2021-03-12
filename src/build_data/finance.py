@@ -3,6 +3,7 @@ from collections import OrderedDict
 from collections.abc import MutableMapping
 from urllib.request import Request, urlopen
 from pprint import pprint
+import json
 import re
 
 # 3rd party library
@@ -18,24 +19,24 @@ class FinanceData(MutableMapping):
     def __init__(self, dic=None):
         if not dic:
             dic = {}
-        self.__data = OrderedDict(dic)
+        self.__data = OrderedDict(dic)  # json-like dictionary
 
-    def __repr__(self):
-        return self.__data.__repr__()
+    # def __repr__(self):
+    #     return str(self.__data.keys())
 
     def __str__(self):
-        return self.__data.__str__
+        return json.dumps(self.__data, indent=4)
 
     def __getitem__(self, item):
         return self.__data[item]
 
     def __setitem__(self, key, value):
-        if not re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}', key):
-            raise KeyError("Invalid Key format, correct format should be DD-MMM-YYYY")  # todo: custom exception
-        if not isinstance(value, list):
-            raise KeyError("Invalid Value format")
+        if not re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}', key):  # key: DD-MM-YYYY
+            raise FinancialDataErrorException("Invalid Key format, correct format should be DD-MMM-YYYY")  # todo: custom exception
+        if not isinstance(value, list): # value is a list
+            raise FinancialDataErrorException("Invalid Value format")
         if key in self.__data:
-            self.__data[key].append(value)
+            self.__data[key].extend(value)
         else:
             self.__data[key] = value
 
@@ -65,7 +66,9 @@ class FinanceData(MutableMapping):
                 self[annual_report] = quarter
         for annual_report, quarter in kwargs.items():
             self[annual_report] = quarter
-            # self.__data[annual_report] = quarter
+
+    def items(self):
+        yield from self.__data.items()
 
     @staticmethod
     def parser(**kwargs):
@@ -73,32 +76,35 @@ class FinanceData(MutableMapping):
         report_data = {}
         annual_report = kwargs.pop('F.Y.')
         quarter = kwargs.pop('#')
-        report_data.update({f'quarter {quarter}': kwargs})
+        report_data.update({f'{quarter}': kwargs})
         finance_data.update({annual_report: [report_data]})
-        return finance_data
+        return finance_data.copy()
 
 
 # {
 #     '31-Dec-2020':[
-#                 'quarter 1': {
+#                 '1': {
 #                         'ROE': 10,
 #                             ...
 #                     },
-#                 'quarter 2':{
+#                 '2':{
 #                         'ROE': 10,
 #                           ...
 #                         }],
 #     '31-Aug-2020':[
-#                 'quarter 1':{
+#                 '1':{
 #                         'ROE': 10,
 #                             ...
 #                     },
-#                 'quarter 2':{
+#                 '2':{
 #                         'ROE': 10,
 #                           ...
 #                         }],
 #         ...
 # }
+
+class QuarterResult:
+    pass
 
 
 class Stock:
@@ -127,8 +133,8 @@ class Stock:
         table_content = self.html.find(name='table', id='financialResultTable')
         self.quarter_report_list = []
         temp_key = []
-        finance_data = OrderedDict()  # todo: wrote a custom container class
-        finance_data_test = FinanceData()
+        quarter_result = OrderedDict()  # todo: wrote a custom Object class to handle quarter result
+        finance_data = FinanceData()
         for row in table_content.findAll(name='tr')[1:]:
             for key in row.findAll(name='th'):
                 temp_key.append(key.text.rstrip().strip())  # Obtain key in list
@@ -136,12 +142,12 @@ class Stock:
                 if key in ('F.Y.', 'Ann. Date', 'Quarter', 'Revenue',
                            'PBT', 'NP', 'EOQ DY', 'NP Margin',
                            'ROE', 'DPS', 'QoQ', 'YoY', 'EPS', '#'):
-                    finance_data[key] = value.text.rstrip().strip()
-            if finance_data:
-                json_format = FinanceData.parser(**finance_data)
-                finance_data_test.update(**json_format)
-                self.quarter_report_list.append(finance_data.copy())
-        return self.quarter_report_list
+                    quarter_result[key] = value.text.rstrip().strip()
+            if quarter_result:
+                json_format = FinanceData.parser(**quarter_result)
+                finance_data.update(**json_format)
+                self.quarter_report_list.append(quarter_result.copy())
+        return finance_data
         pass
 
     def _to_json(self):
@@ -266,5 +272,10 @@ class Stock:
 if __name__ == '__main__':
     stock = Stock('1155')
     # print(stock.stock_price())
-    stock.finance_result()
+    finance = stock.finance_result()
+    for annual, quarter_list in finance.items():
+        print(f'*** {annual} ***')
+        for quarter in quarter_list:
+            for num, fin in quarter.items():
+                print(num, fin)
     stock._to_json()

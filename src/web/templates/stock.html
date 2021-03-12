@@ -13,8 +13,9 @@
     <h3> Trading Volume: {{ price['Trading Volume'] }}</h3>
     <h2> Finance Result </h2>
     <table>
+        <caption>{{ price.name }} Finance Result</caption>
         <tr>
-            <th>Annual Report</th>
+            <th>Quarter</th>
             <th>Announcement Date</th>
             <th>Quarter Report</th>
             <th>Revenue</th>
@@ -28,24 +29,28 @@
             <th>QoQ</th>
             <th>YoY</th>
         </tr>
-        {% for row in finance %}
-            <tr>
-                <th>{{ row['F.Y.'] }}</th>
-                <th>{{ row['Ann. Date'] }}</th>
-                <th>{{ row['Quarter'] }}</th>
-                <th>{{ row['Revenue'] }}</th>
-                <th>{{ row['PBT'] }}</th>
-                <th>{{ row['NP'] }}</th>
-                <th>{{ row['EOQ DY'] }}</th>
-                <th>{{ row['NP Margin'] }}</th>
-                <th>{{ row['ROE'] }}</th>
-                <th>{{ row['EPS'] }}</th>
-                <th>{{ row['DPS'] }}</th>
-                <th>{{ row['QoQ'] }}</th>
-                <th>{{ row['YoY'] }}</th>
-            </tr>
+        {% for annual, quarter_list in finance.items() %}
+            <tr><th colspan="13">{{ annual }}</th></tr>
+            {% for quarter in quarter_list %}
+                {% for quarter_no, finance in quarter.items() %}
+                    <tr>
+                        <td>{{ quarter_no }}</td>
+                        <td>{{ finance['Ann. Date'] }}</td>
+                        <td>{{ finance['Quarter'] }}</td>
+                        <td>{{ finance['Revenue'] }}</td>
+                        <td>{{ finance['PBT'] }}</td>
+                        <td>{{ finance['NP'] }}</td>
+                        <td>{{ finance['EOQ DY'] }}</td>
+                        <td>{{ finance['NP Margin'] }}</td>
+                        <td>{{ finance['ROE'] }}</td>
+                        <td>{{ finance['EPS'] }}</td>
+                        <td>{{ finance['DPS'] }}</td>
+                        <td>{{ finance['QoQ'] }}</td>
+                        <td>{{ finance['YoY'] }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
         {% endfor %}
-        <tr></tr>
     </table>
     <br>
     <h2> KLSE News </h2>
