@@ -1,6 +1,5 @@
 # Std Library
 import pathlib
-from collections import OrderedDict
 
 # 3rd Party Lib
 from flask import Flask
@@ -60,11 +59,11 @@ def stock(code):  # code obtain from url_for **kwargs
     #     print(platform)
     #     print(news_list)
     # pass
-    stock_data = Stock(code)
+    stock = Stock(code)
     return render_template('stock.html',
                            result=news,
-                           finance=stock_data.finance_result(),
-                           price=stock_data.stock_price())
+                           finance=stock.finance_result(),
+                           stock=stock)
 
 
 @app.route('/stock/api', methods=['GET'])
@@ -73,10 +72,10 @@ def api():
     code = query_param.get('code', None)
     if code:
         api_stock = Stock(code)
-        finance_result = api_stock.finance_result()
-        return jsonify(stock='MAYBANK',
+        return jsonify(stock=api_stock.name,
                        code=code,
-                       finance=finance_result)
+                       price=api_stock.price,
+                       finance=api_stock.finance_result())
 
     return f"<p>Unable related information," \
            f" we only support finance data by providing us stock code</p>"

@@ -22,7 +22,7 @@ class FinanceData(MutableMapping, dict):
         self.__data = OrderedDict(dic)  # json-like dictionary
 
     def __repr__(self):
-        return self.__data
+        return str(self)
 
     def __str__(self):
         return json.dumps(self.__data, indent=4)
@@ -32,7 +32,7 @@ class FinanceData(MutableMapping, dict):
 
     def __setitem__(self, key, value):
         if not re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}', key):  # key: DD-MM-YYYY
-            raise FinancialDataErrorException("Invalid Key format, correct format should be DD-MMM-YYYY")  # todo: custom exception
+            raise FinancialDataErrorException("Invalid Key format, correct format should be DD-MMM-YYYY")
         if not isinstance(value, list): # value is a list
             raise FinancialDataErrorException("Invalid Value format")
         if key in self.__data:
@@ -120,14 +120,13 @@ class Stock:
         except Exception:
             raise WebAccessException(f'unable to access {url} webpage')
         self.html = BeautifulSoup(data, 'lxml')
+        self.stock_information()
 
-    def stock_price(self):  # todo: improve make the stock name, price into instance attribute
+    def stock_information(self):
         table_list = self.html.find(name='table', id='stockhdr').findAll(name='td')
-        stock = {}
         for key, value in zip(table_list[:len(table_list) // 2], table_list[len(table_list) // 2:]):
-            stock[key.text.rstrip().strip()] = value.text.rstrip().strip()
-        stock['name'] = self.html.find(name='span', attrs={'class': 'stname'}).text
-        return stock
+            setattr(self, key.text.rstrip().strip().split(' ')[-1].lower(), value.text.rstrip().strip())    # turn into instance attribute
+        setattr(self, 'name', self.html.find(name='span', attrs={'class': 'stname'}).text)
 
     def finance_result(self):
         table_content = self.html.find(name='table', id='financialResultTable')
@@ -183,83 +182,13 @@ class Stock:
 # ]
 
 
-# json format
-# [
-#     {
-#         'Annual Report':'31-Dec-2020',
-#         'Quarter Report': [
-#             {
-#                 'Quarter': 'first',
-#                 'ROE':10,
-#                 'DIV':5
-#             },
-#             {
-#                 'Quarter': 'second',
-#                 'ROE':10,
-#                 'DIV':5
-#             },
-#         ]
-#     },
-#     {
-#         'Annual Report':'31-Dec-2019',
-#         'Quarter Report': [
-#             {
-#                 'Quarter': 'first',
-#                 'ROE':10,
-#                 'DIV':5
-#             },
-#             {
-#                 'Quarter': 'second',
-#                 'ROE':10,
-#                 'DIV':5
-#             },
-#         ]
-#     }
-# ]
-
-
-# json format
-# [
-#     {
-#         'Annual Report':'31-Dec-2020',
-#         'Quarter Report': [
-#             {
-#                 'Quarter': 'first',
-#                 'ROE':10,
-#                 'DIV':5
-#             },
-#             {
-#                 'Quarter': 'second',
-#                 'ROE':10,
-#                 'DIV':5
-#             },
-#         ]
-#     },
-#     {
-#         'Annual Report':'31-Dec-2019',
-#         'Quarter Report': [
-#             {
-#                 'Quarter': 'first',
-#                 'ROE':10,
-#                 'DIV':5
-#             },
-#             {
-#                 'Quarter': 'second',
-#                 'ROE':10,
-#                 'DIV':5
-#             },
-#         ]
-#     }
-# ]
-
-
 if __name__ == '__main__':
     stock = Stock('1155')
-    # print(stock.stock_price())
     finance = stock.finance_result()
     for annual, quarter_list in finance.items():
         print(f'*** {annual} ***')
         for quarter in quarter_list:
             for num, fin in quarter.items():
                 print(num, fin)
+    print()
 
