@@ -3,12 +3,12 @@ table {
     border-collapse: collapse;
     width: 100%;
 }
-td{
+td, th{
     border: 1px solid #dddddd;
     text-align: left;
     padding: 8px;
 }
-th{
+th #annual{
     color: white;
     background-color: black;
     text-align: left;

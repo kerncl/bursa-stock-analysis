@@ -1,9 +1,10 @@
 # Std Library
 import pathlib
+from collections import OrderedDict
 
 # 3rd Party Lib
 from flask import Flask
-from flask import render_template, request
+from flask import render_template, request, jsonify
 
 # Internal Script
 from src.web.backend.forms import StockForm
@@ -17,6 +18,7 @@ template_folder = pathlib.Path(__file__).parent.parent.joinpath('templates').__s
 static_folder = pathlib.Path(__file__).parent.parent.joinpath('static').__str__()
 app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
 app.secret_key = 'bursa'
+app.config['JSON_SORT_KEYS'] = False    # ignore key order during jsonify
 
 
 @app.route('/')
@@ -65,11 +67,33 @@ def stock(code):  # code obtain from url_for **kwargs
                            price=stock_data.stock_price())
 
 
+@app.route('/stock/api', methods=['GET'])
+def api():
+    query_param = request.args
+    code = query_param.get('code', None)
+    if code:
+        api_stock = Stock(code)
+        finance_result = api_stock.finance_result()
+        return jsonify(stock='MAYBANK',
+                       code=code,
+                       finance=finance_result)
+
+    return f"<p>Unable related information," \
+           f" we only support finance data by providing us stock code</p>"
+
+
 @app.teardown_appcontext
 def loaded(exception=None):
     # Session.remove()
     print('Loaded Completed')
     pass
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    # handling 404 ERROR
+    return "<h1>404</h1>" \
+           "<p>The resource could not be found</p>", 404
 
 
 if __name__ == '__main__':

@@ -14,15 +14,15 @@ from src.tools.error import *
 from src.tools.DataStructure import *
 
 
-class FinanceData(MutableMapping):
+class FinanceData(MutableMapping, dict):
 
     def __init__(self, dic=None):
         if not dic:
             dic = {}
         self.__data = OrderedDict(dic)  # json-like dictionary
 
-    # def __repr__(self):
-    #     return str(self.__data.keys())
+    def __repr__(self):
+        return self.__data
 
     def __str__(self):
         return json.dumps(self.__data, indent=4)
@@ -121,7 +121,7 @@ class Stock:
             raise WebAccessException(f'unable to access {url} webpage')
         self.html = BeautifulSoup(data, 'lxml')
 
-    def stock_price(self):
+    def stock_price(self):  # todo: improve make the stock name, price into instance attribute
         table_list = self.html.find(name='table', id='stockhdr').findAll(name='td')
         stock = {}
         for key, value in zip(table_list[:len(table_list) // 2], table_list[len(table_list) // 2:]):
@@ -131,7 +131,6 @@ class Stock:
 
     def finance_result(self):
         table_content = self.html.find(name='table', id='financialResultTable')
-        self.quarter_report_list = []
         temp_key = []
         quarter_result = OrderedDict()  # todo: wrote a custom Object class to handle quarter result
         finance_data = FinanceData()
@@ -146,24 +145,9 @@ class Stock:
             if quarter_result:
                 json_format = FinanceData.parser(**quarter_result)
                 finance_data.update(**json_format)
-                self.quarter_report_list.append(quarter_result.copy())
         return finance_data
         pass
 
-    def _to_json(self):
-        temp_annual_report = ''
-        json_list = []
-        json_yearly = OrderedDict()
-        for row in self.quarter_report_list:
-            if row['F.Y.'] != temp_annual_report:
-                json_yearly.clear()
-                temp_annual_report = row['F.Y.']
-                json_yearly['Annual Report'] = temp_annual_report
-                json_yearly['Quarter Report'] = []
-            json_yearly['Quarter Report'].append({**row})
-            json_list.append(json_yearly.copy())
-        pprint(json_list, indent=4)
-        pass
 # json format
 # [
 #     {
@@ -278,4 +262,4 @@ if __name__ == '__main__':
         for quarter in quarter_list:
             for num, fin in quarter.items():
                 print(num, fin)
-    stock._to_json()
+
