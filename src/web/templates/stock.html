@@ -30,7 +30,7 @@
             <th>YoY</th>
         </tr>
         {% for annual, quarter_list in finance.items() %}
-            <tr><th colspan="13">{{ annual }}</th></tr>
+            <tr><th colspan="13" id="annual">{{ annual }}</th></tr>
             {% for quarter in quarter_list %}
                 {% for quarter_no, finance in quarter.items() %}
                     <tr>
@@ -63,9 +63,9 @@
         </tr>
         {% for row1 in result.klse %}
             <tr>
-                <th><a href="{{ row1.link }}" target="_blank">{{ row1.title }}</a></th>
-                <th>{{ row1.date }}</th>
-                <th>{{ row1.source }}</th>
+                <td><a href="{{ row1.link }}" target="_blank">{{ row1.title }}</a></td>
+                <td>{{ row1.date }}</td>
+                <td>{{ row1.source }}</td>
             </tr>
         {% endfor %}
         </table>
@@ -80,13 +80,13 @@
         </tr>
         {% for row2 in result.i3investor %}
             <tr>
-                <th><a href="{{ row2.link }}" target="_blank">{{ row2.title }}</a></th>
-                <th>{{ row2.date }}</th>
-                <th>{{ row2.source }}</th>
+                <td><a href="{{ row2.link }}" target="_blank">{{ row2.title }}</a></td>
+                <td>{{ row2.date }}</td>
+                <td>{{ row2.source }}</td>
             </tr>
         {% else %}
             <tr>
-                <th>Sorry sources unavailable</th>
+                <td>Sorry sources unavailable</td>
             </tr>
         {% endfor %}
         </table>
