@@ -104,6 +104,14 @@ class FinanceData(MutableMapping, dict):
 # }
 
 class QuarterResult:
+    def __setattr__(self, key, value):
+        if key in ('F.Y.', 'Ann. Date', 'Quarter', 'Revenue',
+                           'PBT', 'NP', 'EOQ DY', 'NP Margin',
+                           'ROE', 'DPS', 'QoQ', 'YoY', 'EPS', '#'):
+            super().__setattr__(key, value)
+
+    def __len__(self):
+        return len(self.__dict__)
     pass
 
 
@@ -120,9 +128,9 @@ class Stock:
         except Exception:
             raise WebAccessException(f'unable to access {url} webpage')
         self.html = BeautifulSoup(data, 'lxml')
-        self.stock_information()
+        self._stock_information()
 
-    def stock_information(self):
+    def _stock_information(self):
         table_list = self.html.find(name='table', id='stockhdr').findAll(name='td')
         for key, value in zip(table_list[:len(table_list) // 2], table_list[len(table_list) // 2:]):
             setattr(self, key.text.rstrip().strip().split(' ')[-1].lower(), value.text.rstrip().strip())    # turn into instance attribute
@@ -131,18 +139,16 @@ class Stock:
     def finance_result(self):
         table_content = self.html.find(name='table', id='financialResultTable')
         temp_key = []
-        quarter_result = OrderedDict()  # todo: wrote a custom Object class to handle quarter result
         finance_data = FinanceData()
         for row in table_content.findAll(name='tr')[1:]:
+            quarter_class = QuarterResult()
             for key in row.findAll(name='th'):
                 temp_key.append(key.text.rstrip().strip())  # Obtain key in list
             for key, value in zip(temp_key, row.findAll(name='td')):
-                if key in ('F.Y.', 'Ann. Date', 'Quarter', 'Revenue',
-                           'PBT', 'NP', 'EOQ DY', 'NP Margin',
-                           'ROE', 'DPS', 'QoQ', 'YoY', 'EPS', '#'):
-                    quarter_result[key] = value.text.rstrip().strip()
-            if quarter_result:
-                json_format = FinanceData.parser(**quarter_result)
+                value = value.text.rstrip().strip()
+                setattr(quarter_class, key, value)
+            if quarter_class:
+                json_format = FinanceData.parser(**quarter_class.__dict__)
                 finance_data.update(**json_format)
         return finance_data
         pass
