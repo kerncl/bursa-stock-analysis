@@ -1,14 +1,14 @@
 {% extends 'home.html' %}
 
 {% block searchresult %}
-<table>
+<table id="stock_search_table">
     <tr>
-        <th>Code</th>
-        <th>Company</th>
-        <th>Company Full Name</th>
-        <th>Category</th>
-        <th>Market</th>
-        <th>Market Capital(M)</th>
+        <th onclick="sortTable('stock_search_table', 0)">Code</th>
+        <th onclick="sortTable('stock_search_table', 1)">Company</th>
+        <th onclick="sortTable('stock_search_table', 2)">Company Full Name</th>
+        <th onclick="sortTable('stock_search_table', 3)">Category</th>
+        <th onclick="sortTable('stock_search_table', 4)">Market</th>
+        <th onclick="sortTable('stock_search_table', 5)">Market Capital(M)</th>
     </tr>
     {% for row in result %}
         <tr>

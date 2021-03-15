@@ -3,12 +3,16 @@ table {
     border-collapse: collapse;
     width: 100%;
 }
+th {
+    cursor: pointer;
+}
 td, th{
     border: 1px solid #dddddd;
     text-align: left;
     padding: 8px;
+
 }
-th #annual{
+th#annual{
     color: white;
     background-color: black;
     text-align: left;
@@ -24,6 +28,7 @@ tr:nth-child(even){
 }
 
 .tab button{
+    display: block;
     background-color: inherit;
     float: left;
     border: none;
@@ -36,6 +41,10 @@ tr:nth-child(even){
 
 .tab button.active{
     background-color: #ccc;
+}
+
+.tab button:hover{
+    background-color: #ddd;
 }
 
 .tabcontent {
