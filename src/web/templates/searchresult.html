@@ -12,7 +12,7 @@
     </tr>
     {% for row in result %}
         <tr>
-            <td><a href="{{ url_for('stock', code=row.code) }}"> {{ row.code }}</a></td>
+            <td><a href="{{ url_for('stock', code=row.code, company=row.company) }}"> {{ row.code }}</a></td>
             <td>{{ row.company }}</td>
             <td>{{ row.company_name }}</td>
             <td>{{ row.category }}</td>
