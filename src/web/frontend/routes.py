@@ -51,6 +51,8 @@ def search():
 
 @app.route('/stock/<code>', methods=['GET'])
 def stock(code):  # code obtain from url_for **kwargs
+    query_param = request.args
+    company = query_param.get('company', None)
     with GenerateDB() as session:
         news_data = session.query(News).filter(News.code == code).one_or_none()
         print(news_data)
@@ -63,7 +65,8 @@ def stock(code):  # code obtain from url_for **kwargs
     return render_template('stock.html',
                            result=news,
                            finance=stock.finance_result(),
-                           stock=stock)
+                           stock=stock,
+                           company=company)
 
 
 @app.route('/stock/api', methods=['GET'])

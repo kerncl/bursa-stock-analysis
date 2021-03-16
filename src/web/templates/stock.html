@@ -6,32 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ url_for('static', filename='custom.css')}}"/>
     <script src="{{ url_for('static', filename='CustomScript.js') }}"></script>
-<!--    <style>-->
-<!--        .tab {-->
-<!--              overflow: hidden;-->
-<!--              border: 1px solid #ccc;-->
-<!--              background-color: #f1f1f1;-->
-<!--        }-->
-<!--        .tab button{-->
-<!--        background-color: inherit;-->
-<!--        float: left;-->
-<!--        border: none;-->
-<!--        outline: none;-->
-<!--        cursor: pointer;-->
-<!--        padding: 14px 16px;-->
-<!--        transition: 0.3s;-->
-<!--        font-size: 17px;-->
-<!--        }-->
-<!--        .tab button.active{-->
-<!--        background-color: #d21717;-->
-<!--        }-->
-<!--        .tabcontent {-->
-<!--        display: none;-->
-<!--        padding: 6px 12px;-->
-<!--        border: 1px solid #acc;-->
-<!--        border-top: none;-->
-<!--        }-->
-<!--    </style>-->
 </head>
 <body>
     <h1> Stock {{ stock.name }}</h1>
@@ -41,11 +15,105 @@
     <h3> Volume: {{ stock.volume }}</h3>
     <div class="tab">
         <button class="tablinks" onclick="opentab(event, 'Overview')">Overview</button>
+        <button class="tablinks" onclick="opentab(event, 'Technical Chart')">Technical Chart</button>
         <button class="tablinks" onclick="opentab(event, 'Finance')">Finance</button>
         <button class="tablinks" onclick="opentab(event, 'News')">News</button>
+        <button class="tablinks" onclick="opentab(event, 'Power BI')">Power BI</button>
     </div>
     <div id="Overview" class="tabcontent">
         <h1>Overview</h1>
+        <div style="display: flow-root">
+            <!--  Company Profile Widget -->
+            <div class="tradingview-widget-container" style="float: left; padding: 16px;">
+              <div class="tradingview-widget-container__widget"></div>
+              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-profile.js" async>
+                  {
+                  "symbol": "MYX:{{ company }}",
+                  "width": "48%",
+                  "height": 650,
+                  "colorTheme": "dark",
+                  "isTransparent": false,
+                  "locale": "en"
+                  }
+              </script>
+            </div>
+            <!-- Technical Analysis Widget -->
+            <div class="tradingview-widget-container" style="float: left; padding: 16px;">
+              <div class="tradingview-widget-container__widget"></div>
+              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+                  {
+                  "interval": "1M",
+                  "width": "48%",
+                  "isTransparent": false,
+                  "height": 500,
+                  "symbol": "MYX:{{ company }}",
+                  "showIntervalTabs": true,
+                  "locale": "en",
+                  "colorTheme": "dark"
+                  }
+              </script>
+            </div>
+            <!-- Fundamental Data Widget -->
+            <div class="tradingview-widget-container" style="float: left; padding: 16px;">
+          <div class="tradingview-widget-container__widget"></div>
+          <div class="tradingview-widget-copyright">
+              <a href="https://www.tradingview.com/symbols/MYX-{{ company }}/" rel="noopener" target="_blank">
+                  <span class="blue-text">{{ company }} Fundamental Data</span>
+              </a>
+              by TradingView
+          </div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-financials.js" async>
+              {
+              "symbol": "MYX:{{ company }}",
+              "colorTheme": "dark",
+              "isTransparent": false,
+              "largeChartUrl": "",
+              "displayMode": "compact",
+              "width": "99%",
+              "height": "550",
+              "locale": "en"
+                }
+          </script>
+        </div>
+        </div>
+    </div>
+    <div id="Technical Chart" class="tabcontent">
+        <!--        <div class="tradingview-widget-container">-->
+        <!--          <div id="tradingview_5b2d8"></div>-->
+        <!--          <div class="tradingview-widget-copyright">-->
+        <!--              <a href="https://www.tradingview.com/symbols/MYX-{{ company }}/" rel="noopener" target="_blank">-->
+        <!--                  <span class="blue-text">{{ company }} Chart</span>-->
+        <!--              </a>-->
+        <!--              by TradingView-->
+        <!--          </div>-->
+        <!--          <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>-->
+        <!--          <script type="text/javascript">-->
+        <!--              new TradingView.widget(-->
+        <!--              {-->
+        <!--              "width": 980,-->
+        <!--              "height": 610,-->
+        <!--              "symbol": "MYX:{{ company }}",-->
+        <!--              "interval": "W",-->
+        <!--              "timezone": "Asia/Singapore",-->
+        <!--              "theme": "light",-->
+        <!--              "style": "1",-->
+        <!--              "locale": "en",-->
+        <!--              "toolbar_bg": "#f1f3f6",-->
+        <!--              "enable_publishing": false,-->
+        <!--              "withdateranges": true,-->
+        <!--              "hide_side_toolbar": false,-->
+        <!--              "allow_symbol_change": true,-->
+        <!--              "details": true,-->
+        <!--              "studies": [-->
+        <!--                "MASimple@tv-basicstudies",-->
+        <!--                "MAExp@tv-basicstudies",-->
+        <!--                "MAWeighted@tv-basicstudies"-->
+        <!--              ],-->
+        <!--              "container_id": "tradingview_5b2d8"-->
+        <!--            }-->
+        <!--              );-->
+        <!--          </script>-->
+        <!--        </div>-->
     </div>
     <div id="Finance" class="tabcontent">
         <h2> Finance Result </h2>
@@ -129,6 +197,9 @@
         {% endfor %}
         </table>
     </div>
+    </div>
+    <div id="Power BI" class="tabcontent">
+        <h1> WIP </h1>
     </div>
     <script>
         function opentab(evt, tabname){

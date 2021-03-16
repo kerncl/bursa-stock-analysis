@@ -140,11 +140,11 @@ class GenerateDB:
         """
         # cls.update_csv()  # update csv from staticmethod
         self = cls(csv_file)    # execute __init__
-        self.__enter__()
+        self.__enter__()    # todo: can use self
         if self.engine.dialect.has_table(self.engine, 'company'):
             Base.metadata.drop_all(bind=self.engine, tables=[Company.__table__, News.__table__])
         self.update_table()
-        self.__exit__()
+        self.__exit__() # todo: can use self
         return cls
 
 
