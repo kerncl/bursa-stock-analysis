@@ -47,14 +47,13 @@ def web_access():
     driver = webdriver.Chrome(executable_path=CHROME_EXECUTED_PATH, chrome_options=options)
     driver.get(KLSE_URL)
     logs.info('Loading KLSE web page')
-    sleep(1)
+    sleep(2)
     try:
         xpath_submit = "//input[@id='submit']"
         submit_button = driver.find_element_by_xpath(xpath=xpath_submit)
     except Exception as e:
         logs.warning(f"xpath_submit: '{xpath_submit}' not working")
         logs.warning(f'Trying new xpath')
-        # raise InvalidXpathException(f'Invalid Xpath: {e}')
         try:
             xpath_submit = "//*[@id='submit']"
             submit_button = driver.find_element_by_xpath(xpath=xpath_submit)
@@ -84,25 +83,31 @@ def web_scrapping_stock(data):
     html = BeautifulSoup(data, 'lxml')
     stock_tb_list = html.find(name='tbody').findAll(name='tr')
     csv_file_name = datetime.today().date().__str__() + '_stock_list.csv'
+
+    def _extract_data(row_data):
+        stock_data = []
+        code = str(row_data.find(attrs={'title': 'Code'}).text)
+        if re.search(r'[A-Z]', code) or len(code) > 4:
+            return stock_data
+        match = re.match(r'(?P<company>[\w\d\-]+)', row_data.find(name='td').getText())
+        company = match.group('company')
+        company_name = row_data.find(name='td').attrs.get('title')
+        category, market = row_data.find(attrs={'title': 'Category'}).text.split(',')
+        stock_data.extend([code, company, company_name, category, market.strip()])
+        for header in csv_header[csv_header.index('EPS'):]:
+            stock_data.append(row_data.find(attrs={'title': header}).text)
+        return stock_data
+        pass
+
     with open(CSV_PATH, mode='w', newline='') as f:
         writer = csv.writer(f)
         csv_header = ('Code', 'Company', 'Company name', 'Category', 'Market', 'EPS', 'NTA', 'PE', 'DY', 'ROE',
                          'Market Capital')
         writer.writerow(csv_header)
-        for index, row_data in enumerate(stock_tb_list, 1):    # todo: can improve the speed by threading / multiprocessing ?
-            stock_data = []
-            code = str(row_data.find(attrs={'title': 'Code'}).text)
-            if re.search(r'[A-Z]', code) or len(code) > 4:
-                continue
-            match = re.match(r'(?P<company>[\w\d\-]+)', row_data.find(name='td').getText())
-            company = match.group('company')
-            company_name = row_data.find(name='td').attrs.get('title')
-            category, market = row_data.find(attrs={'title': 'Category'}).text.split(',')
-            stock_data.extend([code, company, company_name, category, market.strip()])
-            for header in csv_header[csv_header.index('EPS'):]:
-                stock_data.append(row_data.find(attrs={'title': header}).text)
-            logs.info(f'{index}\t{stock_data}')
-            writer.writerow(stock_data)
+        for index, stock_info in enumerate(map(_extract_data, stock_tb_list), 1):   # todo: can be improve with threading or multiprocessing ?
+            if stock_info:
+                logs.info(f'{index}: {stock_info}')
+                writer.writerow(stock_info)
 
 
 def web_scrapping_news(code):
