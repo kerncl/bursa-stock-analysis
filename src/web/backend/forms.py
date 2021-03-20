@@ -14,7 +14,16 @@ class StockForm(Form):
                                     ('Energy', 'Energy'),
                                     ('Financial Services', 'Finance'),
                                     ('Health Care', 'Health'),
-                                    ('Industrial Products & Services', 'Industrial & Services')])
+                                    ('Technology', 'Technology'),
+                                    ('Industrial Products & Services', 'Industrial & Services'),
+                                    ('Telecommunications & Media', 'Telecom & Mulitmeida'),
+                                    ('Property', 'Property'),
+                                    ('%Plantation%', 'Plantation'),
+                                    ('Transportation & Logistics', 'Transportation & Logistics'),
+                                    ('Real Estate Investment Trusts', 'REIT'),
+                                    ('Utilities', 'Utilities'),
+                                    ('SPAC', 'SPAC'),
+                                    ('Closed-End Fund', 'Fund')])
     market = SelectField("Market", choices=[('%%', '-'),
                                             ('Main Market', 'Main'),
                                             ('Ace Market', 'Ace')])
