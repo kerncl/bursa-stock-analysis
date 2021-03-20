@@ -11,19 +11,25 @@ from selenium.webdriver.support import expected_conditions as EC
 
 # Internal Script
 from src.tools.error import *
+from src.tools.globalvar import *
 
 
 def html_chart(code):
-    tradingview_url = 'https://www.klsescreener.com/v2/charting/chart/'
-    url = tradingview_url + code
+    """
+    Obtain technical chart (HTML) from klsescreener website
+    Args:
+        code (4 digit string): Company code number
+
+    Returns:
+        HTML
+    """
+    url = KLSE_CHART_URL + code
 
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--test-type')
     print('Opening chrome')
-    executable_path = os.path.abspath(r'../../external file/chromedriver.exe')  #todo: Pathlib to handle it
-    print(executable_path)
-    driver = webdriver.Chrome(executable_path=executable_path, chrome_options=options)
+    driver = webdriver.Chrome(executable_path=CHROME_EXECUTED_PATH, chrome_options=options)
     driver.get(url)
     print('Loading KLSE web page')
     try:

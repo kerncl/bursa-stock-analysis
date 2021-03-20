@@ -26,7 +26,7 @@ class GenerateDB:
         """
         # read csv
         if csv_file:
-            with open(csv_file, 'r') as f:  # todo: can be done through method with generator
+            with open(csv_file, 'r') as f:  # todo: can be done through method with generator (cookbook v3)
                 row_data = csv.DictReader(f)
                 self.csv_data = [row for row in row_data]
 
