@@ -132,7 +132,7 @@
                 <th onclick="sortTable('klse_news_table', 1)">Date</th>
                 <th onclick="sortTable('klse_news_table', 2)">Source</th>
             </tr>
-            {% for row1 in result.klse %}
+            {% for row1 in result.KLSE %}
                 <tr>
                     <td><a href="{{ row1.link }}" target="_blank">{{ row1.title }}</a></td>
                     <td>{{ row1.date }}</td>
@@ -143,24 +143,25 @@
         </div>
         <h1> i3Investor News </h1>
         <div>
-        <table id="i3_news_table">
-        <tr>
-            <th onclick="sortTable('i3_news_table', 0)">News Title</th>
-            <th onclick="sortTable('i3_news_table', 1)">Date</th>
-            <th onclick="sortTable('i3_news_table', 2)">Source</th>
-        </tr>
-        {% for row2 in result.i3investor %}
+            <table id="i3_news_table">
             <tr>
-                <td><a href="{{ row2.link }}" target="_blank">{{ row2.title }}</a></td>
-                <td>{{ row2.date }}</td>
-                <td>{{ row2.source }}</td>
+                <th onclick="sortTable('i3_news_table', 0)">News Title</th>
+                <th onclick="sortTable('i3_news_table', 1)">Date</th>
+                <th onclick="sortTable('i3_news_table', 2)">Source</th>
             </tr>
-        {% else %}
-            <tr>
-                <td>Sorry sources unavailable</td>
-            </tr>
-        {% endfor %}
+            {% for row2 in result.I3INVESTOR %}
+                <tr>
+                    <td><a href="{{ row2.link }}" target="_blank">{{ row2.title }}</a></td>
+                    <td>{{ row2.date }}</td>
+                    <td>{{ row2.source }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td>Sorry sources unavailable</td>
+                </tr>
+            {% endfor %}
         </table>
+        </div>
     </div>
     </div>
     <div id="Power BI" class="tabcontent">

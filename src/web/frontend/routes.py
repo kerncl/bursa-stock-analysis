@@ -24,12 +24,23 @@ app.config['JSON_SORT_KEYS'] = False    # ignore key order during jsonify
 @app.route('/')
 @app.route('/index')
 def index():
+    """
+    127.0.0.1 or 127.0.0.1/index
+    Returns:
+        HTML page ('127.0.0.1' or '127.0.0.1/index')
+    """
     # app.logger.debug(app.config.get("ENV"))
     return render_template('index.html')
 
 
 @app.route('/home', methods=['POST', 'GET'])
 def search():
+    """
+    127.0.0.1/search
+    Query list of listed company stock based on search resutl from sql database
+    Returns:
+        HTML page ('127.0.0.1/search')
+    """
     stockform = StockForm(request.form)
     if request.method == 'POST':  # when submit has been clicked
         print('* Accessing POST Method')
@@ -52,6 +63,15 @@ def search():
 
 @app.route('/stock/<code>', methods=['GET'])
 def stock(code):  # code obtain from url_for **kwargs
+    """
+    127.0.0.1/stock/<code>
+    A page for stock price, news, overview, technical chart
+    Args:
+        code (4 digit code): Company code, input from searchresult.html page
+
+    Returns:
+        HTML page ('127.0.0.1/stock/<code>')
+    """
     query_param = request.args
     company = query_param.get('company', None)
     with GenerateDB() as session:
@@ -72,6 +92,12 @@ def stock(code):  # code obtain from url_for **kwargs
 
 @app.route('/stock/api', methods=['GET'])
 def api():
+    """
+    127.0.0.1/stock/api?code=<code>
+    Query finance result based on code through API
+    Returns:
+        HTML page ('127.0.0.1/stock/api?code=<code>')
+    """
     query_param = request.args
     code = query_param.get('code', None)
     if code:
@@ -87,6 +113,14 @@ def api():
 
 @app.teardown_appcontext
 def loaded(exception=None):
+    """
+    Print message when the HTML page fully loaded
+    Args:
+        exception (): None
+
+    Returns:
+        -
+    """
     # Session.remove()
     print('Loaded Completed')
     pass
@@ -94,6 +128,14 @@ def loaded(exception=None):
 
 @app.errorhandler(404)
 def page_not_found(e):
+    """
+    Handling on page not found
+    Args:
+        e (): None
+
+    Returns:
+        HTML Page
+    """
     # handling 404 ERROR
     return "<h1>404</h1>" \
            "<p>The resource could not be found</p>", 404
