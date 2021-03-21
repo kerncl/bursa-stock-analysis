@@ -59,7 +59,7 @@ def web_access():
             submit_button = driver.find_element_by_xpath(xpath=xpath_submit)
         except:
             logs.error(f"xpath_submit: '{xpath_submit}' not working too ")
-            raise InvalidXpathException(f'Invalid Xpath: {e}')
+            raise InvalidXpathException(f'Invalid Xpath: {e}') from e
     submit_button.click()
     try:
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "table-responsive")))
@@ -87,11 +87,11 @@ def web_scrapping_stock(data):
     def _extract_data(row_data):
         stock_data = []
         code = str(row_data.find(attrs={'title': 'Code'}).text)
-        if re.search(r'[A-Z]', code) or len(code) > 4:
+        company_name = row_data.find(name='td').attrs.get('title')
+        if re.search(r'[A-Z]', code) or len(code) > 4 or not company_name:
             return stock_data
         match = re.match(r'(?P<company>[\w\d\-]+)', row_data.find(name='td').getText())
         company = match.group('company')
-        company_name = row_data.find(name='td').attrs.get('title')
         category, market = row_data.find(attrs={'title': 'Category'}).text.split(',')
         stock_data.extend([code, company, company_name, category, market.strip()])
         for header in csv_header[csv_header.index('EPS'):]:
@@ -122,7 +122,7 @@ def web_scrapping_news(code):
     #   todo: migrate to another script using class
     news_dic_list = {}
     for platform in ('KLSE', 'I3INVESTOR'):
-        platform_url = globals().get(platform + '_URL')
+        platform_url = globals().get(platform + '_URL') # get global var KLSE_URL / I3INVESTOR_URL
         if platform == 'KLSE':
             platform_news_url = f'{platform_url}/v2/news/stock/{code}'
         elif platform == 'I3INVESTOR':

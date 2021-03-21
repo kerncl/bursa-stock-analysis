@@ -11,13 +11,14 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 
 # Internal Script
 from src.database.table import Base, Company, News
+from src.tools.globalvar import *
 
 
 class GenerateDB:
     """
     Handling on SQL DB
     """
-    def __init__(self, csv_file=None):   # todo: may turn csv into global variable
+    def __init__(self, csv_file=None):
         """
         Initialize and connect to DB
         Args:
@@ -26,14 +27,12 @@ class GenerateDB:
         """
         # read csv
         if csv_file:
-            with open(csv_file, 'r') as f:  # todo: can be done through method with generator (cookbook v3)
-                row_data = csv.DictReader(f)
-                self.csv_data = [row for row in row_data]
+            self._f = open(csv_file, 'r')
+            self.csv_data = csv.DictReader(self._f)
 
     def __enter__(self):
         # Initialize db
-        db_file_path = os.path.abspath(r"../database/stock.db")  # todo: Pathlib to handle
-        self.engine = create_engine(f"sqlite:///{db_file_path}", echo=False)
+        self.engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
         Session = scoped_session(sessionmaker(autocommit=False,
                                               autoflush=False,
                                               bind=self.engine))
@@ -42,8 +41,10 @@ class GenerateDB:
         return self.session
         pass
 
-    def __exit__(self, *args, **kwargs):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.session.close()
+        if getattr(self, 'csv_data', None):
+            self._f.close()
         pass
 
     def update_table(self):
@@ -59,14 +60,14 @@ class GenerateDB:
             # company table doesnt not exist
             Base.metadata.create_all(self.engine)  # Create all table
             insert_data_list = []
-            for csv_row in self.csv_data:   # todo: Convert into Namedtuples ?
+            for csv_row in self.csv_data:
                 insert_data = Company(
                     code=csv_row['Code'],
                     company=csv_row['Company'],
                     company_name=csv_row['Company name'],
                     category=csv_row['Category'],
                     market=csv_row['Market'],
-                    market_cap=float(csv_row['Market capital']),
+                    market_cap=float(csv_row['Market Capital']),
                     news=[News(code=csv_row['Code'],
                                news_klse='https://www.klsescreener.com/v2/news/stock/{Code}'.format_map(csv_row),
                                news_i3investor='https://klse.i3investor.com/servlets/stk/{Code}.jsp'.format_map(csv_row))]
@@ -87,7 +88,7 @@ class GenerateDB:
                         company_name=csv_row['Company name'],
                         category=csv_row['Category'],
                         market=csv_row['Market'],
-                        market_cap=float(csv_row['Market capital']),
+                        market_cap=float(csv_row['Market Capital']),
                         news=[News(code=csv_row['Code'],
                                    news_klse='https://www.klsescreener.com/v2/news/stock/{Code}'.format_map(csv_row),
                                    news_i3investor='https://klse.i3investor.com/servlets/stk/{Code}.jsp'.format_map(csv_row))]
@@ -95,13 +96,13 @@ class GenerateDB:
                     self.session.add(insert_data)
                     self.session.commit()
                     continue
-                if data.market_cap != float(csv_row['Market capital']):
+                if data.market_cap != float(csv_row['Market Capital']):
                     # Market value changes
                     self.session.query(Company)\
                         .filter(Company.code == csv_row['Code'])\
                         .filter(Company.company == csv_row['Company'])\
                         .filter(Company.company_name == csv_row['Company name'])\
-                        .update({'market_cap': float(csv_row['Market capital'])})
+                        .update({'market_cap': float(csv_row['Market Capital'])})
                     self.session.commit()
                     continue
 
@@ -132,7 +133,7 @@ class GenerateDB:
         pass
 
     @classmethod
-    def renew_table(cls):
+    def renew_table(cls, csv_file):
         """
         Clear existing table and update the table
         Returns:
@@ -140,17 +141,16 @@ class GenerateDB:
         """
         # cls.update_csv()  # update csv from staticmethod
         self = cls(csv_file)    # execute __init__
-        self.__enter__()    # todo: can use self
-        if self.engine.dialect.has_table(self.engine, 'company'):
-            Base.metadata.drop_all(bind=self.engine, tables=[Company.__table__, News.__table__])
-        self.update_table()
-        self.__exit__() # todo: can use self
-        return cls
+        with self:  # call __enter__ and __exit__
+            if self.engine.dialect.has_table(self.engine, 'company'):
+                Base.metadata.drop_all(bind=self.engine, tables=[Company.__table__, News.__table__])
+            self.update_table()
+        return self
 
 
 if __name__ == '__main__':
-    csv_file = os.path.abspath('stock_list.csv')
+    # csv_file = os.path.abspath('stock_list.csv')
     GenerateDB.update_csv()
-    db = GenerateDB.renew_table()
+    db = GenerateDB.renew_table(CSV_PATH)
     # db = GenerateDB(csv_file)
     # db.stock_main_table()
