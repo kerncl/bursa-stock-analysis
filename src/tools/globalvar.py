@@ -1,9 +1,10 @@
 import os
 import pathlib
 
-# PATH
+# PATH  # todo: script to verify path, subprocess to handle if no file found ?
 CHROME_EXECUTED_PATH = os.path.abspath('../../external file/chromedriver.exe')
 CSV_PATH = str(pathlib.Path.home().parent.parent.joinpath('temp/stock_list.csv'))
+DB_PATH = os.path.abspath('../database/stock.db')
 
 # URL
 KLSE_URL = 'https://www.klsescreener.com'
