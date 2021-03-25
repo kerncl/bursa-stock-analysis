@@ -10,10 +10,19 @@
 </head>
 <body>
     <h1> Stock {{ stock.name }}</h1>
-    <h3> Price: {{ stock.price }} </h3>
-    <h3> Change: {{ stock.change }} </h3>
-    <h3> Range: {{ stock.range }} </h3>
-    <h3> Volume: {{ stock.volume }}</h3>
+    <dl class="row">
+        <dt class="col-sm-2"> <h4>Price</h4></dt>
+        <dd class="col-sm-10"><h5>:{{ stock.price }}</h5></dd>
+
+        <dt class="col-sm-2"> <h4>Change</h4></dt>
+        <dd class="col-sm-10"><h5>:{{ stock.change }}</h5></dd>
+
+        <dt class="col-sm-2"> <h4>Range</h4></dt>
+        <dd class="col-sm-10"><h5>:{{ stock.range }}</h5></dd>
+
+        <dt class="col-sm-2"><h4>Volume</h4></dt>
+        <dd class="col-sm-10"><h5>:{{ stock.volume }}</h5></dd>
+    </dl>
     <div class="tab">
         <button class="tablinks" onclick="opentab(event, 'Overview')">Overview</button>
         <button class="tablinks" onclick="opentab(event, 'Technical Chart')">Technical Chart</button>
@@ -21,7 +30,7 @@
         <button class="tablinks" onclick="opentab(event, 'News')">News</button>
         <button class="tablinks" onclick="opentab(event, 'Power BI')">Power BI</button>
     </div>
-    <div id="Overview" class="tabcontent">
+    <div id="Overview" class="tabcontent" style="display: block">
         <h1>Overview</h1>
         <div class="container">
             <div class="row">
@@ -86,23 +95,26 @@
     </div>
     <div id="Finance" class="tabcontent">
         <h2> Finance Result </h2>
-        <table id="finance_table">
+        <table id="finance_table" class="table table-sm">
         <caption>{{ stock.name }} Finance Result</caption>
-        <tr>
-            <th>Quarter</th>
-            <th>Announcement Date</th>
-            <th>Quarter Report</th>
-            <th>Revenue</th>
-            <th>Profit before Tax</th>
-            <th>Net Profit</th>
-            <th>DY</th>
-            <th>NP Margin</th>
-            <th>ROE</th>
-            <th>EPS</th>
-            <th>DPS</th>
-            <th>QoQ</th>
-            <th>YoY</th>
-        </tr>
+        <thead>
+            <tr>
+                <th scope="col">Quarter</th>
+                <th scope="col">Announcement Date</th>
+                <th scope="col">Quarter Report</th>
+                <th scope="col">Revenue</th>
+                <th scope="col">Profit before Tax</th>
+                <th scope="col">Net Profit</th>
+                <th scope="col">DY</th>
+                <th scope="col">NP Margin</th>
+                <th scope="col">ROE</th>
+                <th scope="col">EPS</th>
+                <th scope="col">DPS</th>
+                <th scope="col">QoQ</th>
+                <th scope="col">YoY</th>
+            </tr>
+        </thead>
+        <tbody>
         {% for annual, quarter_list in finance.items() %}
             <tr><th colspan="13" id="annual">{{ annual }}</th></tr>
             {% for quarter in quarter_list %}
@@ -125,46 +137,55 @@
                 {% endfor %}
             {% endfor %}
         {% endfor %}
+        </tbody>
     </table>
     </div>
     <div id="News" class="tabcontent">
         <h2> KLSE News </h2>
         <div>
-            <table id="klse_news_table">
-            <tr>
-                <th onclick="sortTable('klse_news_table', 0)">News Title</th>
-                <th onclick="sortTable('klse_news_table', 1)">Date</th>
-                <th onclick="sortTable('klse_news_table', 2)">Source</th>
-            </tr>
-            {% for row1 in result.KLSE %}
-                <tr>
-                    <td><a href="{{ row1.link }}" target="_blank">{{ row1.title }}</a></td>
-                    <td>{{ row1.date }}</td>
-                    <td>{{ row1.source }}</td>
-                </tr>
-            {% endfor %}
+            <table id="klse_news_table" class="table table-sm">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('klse_news_table', 0)" scope="col">News Title</th>
+                        <th onclick="sortTable('klse_news_table', 1)" scope="col">Date</th>
+                        <th onclick="sortTable('klse_news_table', 2)" scope="col">Source</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row1 in result.KLSE %}
+                    <tr>
+                        <td><a href="{{ row1.link }}" target="_blank">{{ row1.title }}</a></td>
+                        <td>{{ row1.date }}</td>
+                        <td>{{ row1.source }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
             </table>
         </div>
         <h1> i3Investor News </h1>
         <div>
-            <table id="i3_news_table">
-            <tr>
-                <th onclick="sortTable('i3_news_table', 0)">News Title</th>
-                <th onclick="sortTable('i3_news_table', 1)">Date</th>
-                <th onclick="sortTable('i3_news_table', 2)">Source</th>
-            </tr>
-            {% for row2 in result.I3INVESTOR %}
-                <tr>
-                    <td><a href="{{ row2.link }}" target="_blank">{{ row2.title }}</a></td>
-                    <td>{{ row2.date }}</td>
-                    <td>{{ row2.source }}</td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td>Sorry sources unavailable</td>
-                </tr>
-            {% endfor %}
-        </table>
+            <table id="i3_news_table" class="table table-sm">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('i3_news_table', 0)" scope="col">News Title</th>
+                        <th onclick="sortTable('i3_news_table', 1)" scope="col">Date</th>
+                        <th onclick="sortTable('i3_news_table', 2)" scope="col">Source</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row2 in result.I3INVESTOR %}
+                        <tr>
+                            <td><a href="{{ row2.link }}" target="_blank">{{ row2.title }}</a></td>
+                            <td>{{ row2.date }}</td>
+                            <td>{{ row2.source }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td>Sorry sources unavailable</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
     </div>

@@ -14,7 +14,7 @@ td, th{
 }
 th#annual{
     color: white;
-    background-color: black;
+    background-color: #2688dd;
     text-align: left;
 }
 tr:nth-child(even){
