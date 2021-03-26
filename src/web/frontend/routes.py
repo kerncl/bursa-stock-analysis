@@ -4,6 +4,7 @@ import pathlib
 # 3rd Party Lib
 from flask import Flask
 from flask import render_template, request, jsonify
+from flask_bootstrap import Bootstrap
 
 # Internal Script
 from src.web.backend.forms import StockForm
@@ -19,6 +20,7 @@ static_folder = pathlib.Path(__file__).parent.parent.joinpath('static').__str__(
 app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
 app.secret_key = 'bursa'
 app.config['JSON_SORT_KEYS'] = False    # ignore key order during jsonify
+Bootstrap(app)
 
 
 @app.route('/')
