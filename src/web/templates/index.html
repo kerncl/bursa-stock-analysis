@@ -1,11 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Stock Analysis</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='/bootstrap-4.6.0-dist/bootstrap-4.6.0-dist/css/bootstrap.css') }}">
-</head>
-<body>
-    <p>Welcome</p>
-</body>
-</html>
+{% extends 'edar_template.html' %}
+
+{% block title %}
+<title>EDAR SOLUTION</title>
+{% endblock %}
+
+{% block content %}
+<div>
+    </script>
+    <img src="{{ url_for('static', filename='image/warren_buffet.jpg') }}" class="rounded mx-auto d-block">
+    <button class="btn btn-primary"
+            id = 'home_button'
+            style="position: relative;
+                    left:50%;
+                     transform: translate(0px, -50px)"
+            >
+        HOME
+    </button>
+    <script type="text/javascript">
+        document.getElementById('home_button').onclick = function (){
+            location.href="{{ url_for('search') }}"
+        }
+    </script>
+</div>
+{% endblock %}
