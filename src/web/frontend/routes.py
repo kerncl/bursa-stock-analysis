@@ -12,6 +12,7 @@ from src.build_data.Conversion import GenerateDB
 from src.database.table import Company, News
 from src.build_data.generateData import web_scrapping_news
 from src.build_data.finance import Stock
+from src.web.backend.backend_process import paginate
 from src.web.backend.technical_chart import html_chart
 
 
@@ -20,7 +21,11 @@ static_folder = pathlib.Path(__file__).parent.parent.joinpath('static').__str__(
 app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
 app.secret_key = 'bursa'
 app.config['JSON_SORT_KEYS'] = False    # ignore key order during jsonify
+app.config['POSTS_PER_PAGE'] = 20
 Bootstrap(app)
+
+# Global variable
+stock_page = {}
 
 
 @app.route('/')
@@ -57,9 +62,15 @@ def search():
                                                        Company.company_name.like(company_full_name),
                                                        Company.category.like(category),
                                                        Company.market.like(market)).all()
-        return render_template('searchresult.html', form=stockform, result=stock_list)
-    elif request.method == 'GET':  # when loaded page
+        page = request.args.get('page',1, type=int)
+        global stock_page
+        stock_page = paginate(stock_list, app.config['POSTS_PER_PAGE'])
+        return render_template('searchresult.html',form=stockform, result=stock_page, page=page)
+    else:
         print('* Accessing GET Method')
+        page = request.args.get('page', 0, type=int)
+        if page:
+            return render_template('searchresult.html', form=stockform, result=stock_page, page=page)
         return render_template('home.html', form=stockform)
 
 
