@@ -1,14 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Stock</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='/bootstrap-4.6.0-dist/bootstrap-4.6.0-dist/css/bootstrap.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='custom.css')}}"/>
-    <script src="{{ url_for('static', filename='CustomScript.js') }}"></script>
-</head>
-<body>
+{% extends 'edar_template.html' %}
+
+{% block title %}
+<title> {{ stock.name }} </title>
+{% endblock %}
+
+{% block content %}
+<div>
     <h1> Stock {{ stock.name }}</h1>
     <dl class="row">
         <dt class="col-sm-2"> <h4>Price</h4></dt>
@@ -207,5 +204,5 @@
             evt.currentTarget.className += "activate"
         }
     </script>
-</body>
-</html>
+</div>
+{% endblock %}

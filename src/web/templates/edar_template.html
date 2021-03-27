@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block title %}{% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/bootstrap-4.6.0-dist/bootstrap-4.6.0-dist/css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='custom.css')}}"/>
+    <script src="{{ url_for('static', filename='CustomScript.js') }}"></script>
+    {% block import_statement %}{% endblock %}
+<!--    {% import "bootstrap/wtf.html" as wtf %}-->
+</head>
+<body>
+<!--header-->
+    <div>
+        <h2 class="display-3"> Welcome to EDAR </h2>
+        <h3> Search Stock Center </h3>
+    </div>
+    <hr>
+    {% block content %}{% endblock %}
+    <hr>
+<!--footage-->
+    <div>
+        <blockquote class="blockquote text-center">
+            <p class="mb-0"> The <b>best investment</b> you can make, is an <b>investment in yourself..</b> </p>
+            <p class="mb-0"> The more you <b>learn</b>, the more you'll <b>earn</b> </p>
+            <footer class="blockquote-footer">Quote By: Warren Buffet</footer>
+            <footer class="blockquote-footer">Create by: kerncl, kerncl@hotmail.com</footer>
+        </blockquote>
+    </div>
+</body>
+</html>
