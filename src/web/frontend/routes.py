@@ -26,6 +26,7 @@ Bootstrap(app)
 
 # Global variable
 stock_page = {}
+total = 0
 
 
 @app.route('/')
@@ -63,14 +64,15 @@ def search():
                                                        Company.category.like(category),
                                                        Company.market.like(market)).all()
         page = request.args.get('page',1, type=int)
-        global stock_page
+        global stock_page, total
         stock_page = paginate(stock_list, app.config['POSTS_PER_PAGE'])
-        return render_template('searchresult.html',form=stockform, result=stock_page, page=page)
+        total = len(stock_list)
+        return render_template('searchresult.html',form=stockform, result=stock_page, page=page, total=total)
     else:
         print('* Accessing GET Method')
         page = request.args.get('page', 0, type=int)
         if page:
-            return render_template('searchresult.html', form=stockform, result=stock_page, page=page)
+            return render_template('searchresult.html', form=stockform, result=stock_page, page=page, total=total)
         return render_template('home.html', form=stockform)
 
 

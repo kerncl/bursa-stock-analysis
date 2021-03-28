@@ -19,7 +19,7 @@ def paginate(stock_list, page_per_size):
     for page in range(1,len(stock_list)//page_per_size+1):
         stock_page[page] = stock_list[(page-1)*page_per_size: page_per_size*page]
     else:
-        stock_page[page+1] = stock_list[:]
+        stock_page[page+1] = stock_list[(page)*page_per_size:]
     return stock_page
 
 
