@@ -1,6 +1,6 @@
 import os
 import pathlib
-from src.build_data.Conversion import GenerateDB
+
 
 # URL
 KLSE_URL = 'https://www.klsescreener.com'
@@ -14,6 +14,7 @@ CSV_PATH = str(pathlib.Path.home().parent.parent.joinpath('temp/stock_list.csv')
 DB_PATH = os.path.abspath('../database/stock.db')
 
 if not os.path.exists(CSV_PATH):
-    GenerateDB.update_csv()
-    GenerateDB.renew_table(CSV_PATH)
+    from src.build_data import Conversion
+    Conversion.GenerateDB.update_csv()
+    Conversion.GenerateDB.renew_table(CSV_PATH)
     print(f'Done generate CSV & DB')

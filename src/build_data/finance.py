@@ -5,6 +5,7 @@ from urllib.request import Request, urlopen
 from pprint import pprint
 import json
 import re
+import pandas as pd
 
 # 3rd party library
 from bs4 import BeautifulSoup
@@ -69,6 +70,27 @@ class FinanceData(MutableMapping, dict):
 
     def items(self):
         yield from self.__data.items()
+
+    def to_df(self):
+        """
+        Convert dict-like into dataframe structure
+        Returns:
+            df
+        """
+        overall_quarter = []
+        header = ('annual', 'quarter no', 'announ date', 'quarter date', 'revenue',
+                  'PBT', 'NP', 'NP Margin', 'ROE', 'EPS', 'DPS', 'QoQ', 'YoY',
+                  'DY')
+        for annual, quarter_list in self.items():
+            for quarter in quarter_list:
+                for quarter_no, quarter_data in quarter.items():
+                    quarter_ = []
+                    quarter_.extend([annual, quarter_no])
+                    for data in quarter_data.values():
+                        quarter_.append(data)
+                    overall_quarter.append(quarter_.copy())
+        df = pd.DataFrame(overall_quarter, columns=header)
+        return df
 
     @staticmethod
     def parser(**kwargs):
@@ -196,5 +218,5 @@ if __name__ == '__main__':
         for quarter in quarter_list:
             for num, fin in quarter.items():
                 print(num, fin)
-    print()
+    df = finance.to_df()
 
