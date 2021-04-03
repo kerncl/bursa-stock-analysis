@@ -1,5 +1,7 @@
 # default library
 import os
+import pandas as pd
+import matplotlib.pyplot as plt
 from urllib.request import Request, urlopen
 
 # 3rd Party Library
@@ -12,9 +14,10 @@ from selenium.webdriver.support import expected_conditions as EC
 # Internal Script
 from src.tools.error import *
 from src.tools.globalvar import *
+from src.build_data.finance import Stock
 
 
-def html_chart(code):
+def technical_chart(code):
     """
     Obtain technical chart (HTML) from klsescreener website
     Args:
@@ -44,6 +47,16 @@ def html_chart(code):
     return iframe
 
 
+def finance_chart(df):
+    print(df)
+    pass
+
 if __name__ == '__main__':
-    html = html_chart('1155')
-    print()
+    code = '1155'
+    # technical chart
+    # html = technical_chart(code)
+
+    # finance chart
+    stock = Stock(code)
+    finance_data = stock.finance_result()
+    finance_chart(finance_data.to_df())
