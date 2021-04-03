@@ -13,7 +13,7 @@ from src.database.table import Company, News
 from src.build_data.generateData import web_scrapping_news
 from src.build_data.finance import Stock
 from src.web.backend.backend_process import paginate
-from src.web.backend.technical_chart import html_chart
+from src.web.backend.chart import technical_chart
 
 
 template_folder = pathlib.Path(__file__).parent.parent.joinpath('templates').__str__()
