@@ -3,6 +3,7 @@ from collections import OrderedDict
 from collections.abc import MutableMapping
 from urllib.request import Request, urlopen
 from pprint import pprint
+from datetime import datetime
 import json
 import re
 import pandas as pd
@@ -23,7 +24,7 @@ class FinanceData(MutableMapping, dict):
         self.__data = OrderedDict(dic)  # json-like dictionary
 
     def __repr__(self):
-        return str(self)
+        return f"<{self.__class__} Number of Annual Report: {len(self)},object at {int(id(self))}>"
 
     def __str__(self):
         return json.dumps(self.__data, indent=4)
@@ -32,7 +33,7 @@ class FinanceData(MutableMapping, dict):
         return self.__data[item]
 
     def __setitem__(self, key, value):
-        if not re.search(r'[0-9]{2}-[A-Z][a-z]{2}-[0-9]{4}', key):  # key: DD-MM-YYYY
+        if not re.search(r'[0-9]{4}-[0-9]{2}-[0-9]{2}', key):  # key: YYYY-MM-DD
             raise FinancialDataErrorException("Invalid Key format, correct format should be DD-MMM-YYYY")
         if not isinstance(value, list): # value is a list
             raise FinancialDataErrorException("Invalid Value format")
@@ -71,6 +72,12 @@ class FinanceData(MutableMapping, dict):
     def items(self):
         yield from self.__data.items()
 
+    def keys(self):
+        return self.__data.keys()
+
+    def values(self):
+        return self.__data.values()
+
     def to_df(self):
         """
         Convert dict-like into dataframe structure
@@ -79,13 +86,14 @@ class FinanceData(MutableMapping, dict):
         """
         overall_quarter = []
         header = ('annual', 'quarter no', 'announ date', 'quarter date', 'revenue',
-                  'PBT', 'NP', 'NP Margin', 'ROE', 'EPS', 'DPS', 'QoQ', 'YoY',
-                  'DY')
+                  'PBT', 'NP', 'NP Margin(%)', 'ROE(%)', 'EPS', 'DPS', 'QoQ(%)', 'YoY(%)',
+                  'DY(%)')
         for annual, quarter_list in self.items():
+            yyyy, mm, dd = annual.split('-')
             for quarter in quarter_list:
                 for quarter_no, quarter_data in quarter.items():
                     quarter_ = []
-                    quarter_.extend([annual, quarter_no])
+                    quarter_.extend([datetime(int(yyyy), int(mm), int(dd)), int(quarter_no)])
                     for data in quarter_data.values():
                         quarter_.append(data)
                     overall_quarter.append(quarter_.copy())
@@ -126,11 +134,52 @@ class FinanceData(MutableMapping, dict):
 # }
 
 class QuarterResult:
+
     def __setattr__(self, key, value):
         if key in ('F.Y.', 'Ann. Date', 'Quarter', 'Revenue',
                            'PBT', 'NP', 'EOQ DY', 'NP Margin',
                            'ROE', 'DPS', 'QoQ', 'YoY', 'EPS', '#'):
+
+            if key in ('Revenue', 'PBT', 'NP', '#'):
+                try:
+                    value = int(value.replace(',', ''))
+                except Exception as e:
+                    raise FinancialDataErrorException(f'Key: {key}, Unable to convert to int: {e}')
+            elif key in ('DPS', 'EPS'):
+                try:
+                    value = float(value)
+                except Exception as e:
+                    raise FinancialDataErrorException(f'Key: {key}, Unable to convert to float: {e}')
+            elif key in ('Ann. Date', 'Quarter', 'F.Y.'):
+                month_convertion = {
+                    'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'may': '05', 'jun': '06',
+                    'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
+                }
+                dd, mm, yyyy = value.split('-')
+                mm = month_convertion.get(mm.lower(), None)
+                if key in ('Quarter', 'Ann. Date'):
+                    try:
+                        value = datetime(int(yyyy), int(mm), int(dd))
+                    except Exception as e:
+                        raise FinancialDataErrorException(f'Key: {key}, Unable to convert to datetime: {e}')
+                else:
+                    value = f'{yyyy}-{mm}-{dd}'
+            elif key in ('NP Margin', 'ROE', 'QoQ', 'YoY', 'EOQ DY'):
+                try:
+                    value = round(float(value.strip('%'))/100,4)
+                except Exception as e:
+                    raise FinancialDataErrorException(f'Key: {key}, Unable to convert to float: {e}')
+
             super().__setattr__(key, value)
+
+    def __repr__(self):
+        return f"<{self.__class__}, Annual Report: {getattr(self,'F.Y.')}, Quarter: {getattr(self, '#')}: object at {int(id(self))}>"
+
+    def __str__(self):
+        txt = ''
+        for key, value in self.__dict__.items():
+            txt += f"{key}\t: {value}" + '\n'
+        return txt
 
     def __len__(self):
         return len(self.__dict__)
@@ -149,17 +198,17 @@ class Stock:
             data = urlopen(req)
         except Exception:
             raise WebAccessException(f'unable to access {url} webpage')
-        self.html = BeautifulSoup(data, 'lxml')
+        self._html = BeautifulSoup(data, 'lxml')
         self._stock_information()
 
     def _stock_information(self):
-        table_list = self.html.find(name='table', id='stockhdr').findAll(name='td')
+        table_list = self._html.find(name='table', id='stockhdr').findAll(name='td')
         for key, value in zip(table_list[:len(table_list) // 2], table_list[len(table_list) // 2:]):
             setattr(self, key.text.rstrip().strip().split(' ')[-1].lower(), value.text.rstrip().strip())    # turn into instance attribute
-        setattr(self, 'name', self.html.find(name='span', attrs={'class': 'stname'}).text)
+        setattr(self, 'name', self._html.find(name='span', attrs={'class': 'stname'}).text)
 
     def finance_result(self):
-        table_content = self.html.find(name='table', id='financialResultTable')
+        table_content = self._html.find(name='table', id='financialResultTable')
         temp_key = []
         finance_data = FinanceData()
         for row in table_content.findAll(name='tr')[1:]:
