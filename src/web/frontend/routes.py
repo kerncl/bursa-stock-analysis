@@ -13,6 +13,7 @@ from src.database.table import Company, News
 from src.build_data.generateData import web_scrapping_news
 from src.build_data.finance import Stock
 from src.web.backend.backend_process import paginate
+from src.web.backend import chart
 
 
 template_folder = pathlib.Path(__file__).parent.parent.joinpath('templates').__str__()
@@ -97,11 +98,14 @@ def stock(code):  # code obtain from url_for **kwargs
     #     print(news_list)
     # pass
     stock = Stock(code)
+    finance = stock.finance_result()
+    fin_chart = chart.finance_chart(df=finance.to_df(), stock_name=stock.name)
     return render_template('stock.html',
                            result=news,
-                           finance=stock.finance_result(),
+                           finance= finance,
                            stock=stock,
-                           company=company)
+                           company=company,
+                           chart=fin_chart)
 
 
 @app.route('/stock/api', methods=['GET'])

@@ -1,7 +1,11 @@
 # default library
 import os
 import pandas as pd
+import base64
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from io import BytesIO
+from matplotlib.figure import Figure
 from urllib.request import Request, urlopen
 
 # 3rd Party Library
@@ -47,9 +51,64 @@ def technical_chart(code):
     return iframe
 
 
-def finance_chart(df):
-    print(df)
+def finance_chart_interactive(df, stock_name):
+    million = 1000000   # todo: merge interactive & web together
+    plt.figure(figsize=(26, 12))  # figsize= x,y
+    ax = plt.subplot(1, 1, 1)
+    xaxis = df['quarter date']
+    yaxis = df['revenue'].div(million)
+    ax.plot(xaxis, yaxis, color='red', linewidth=2, label='Quarter Revenue')
+    ax.legend(loc="upper left", fontsize=12)
+    ax.set(xlabel='Date',
+           ylabel='Price RM(million/x1000000) ',
+           title=f'{stock_name} Quarterly Revenue Sales',
+           xlim=[df['quarter date'].iloc[-1], df['quarter date'].iloc[0]]
+           )
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))  # set x-axis date formatter
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))  # set interval for x-axis
+    ax.tick_params(left=False, bottom=False)
+    ax.grid(b=True, linestyle='--', alpha=0.5)  # background grid
+    ax.set_facecolor((.94, .95, .98))
+    plt.show()
     pass
+
+
+def finance_chart(df, stock_name):
+    """
+    Finance chart by using matplotlib and display on web
+    Args:
+        df (dataframe): Finance Result in dataframe format
+        stock_name (str): stock name eg: KLSE: MAYBANK (1155)
+
+    Returns:
+        (str) Image of 64bit encoder text
+    """
+    million = 1000000
+    fig = Figure(figsize=(16, 12))
+    ax = fig.add_subplot(1, 1, 1)
+    xaxis = df['quarter date']
+    yaxis = df['revenue'].div(million)  # todo: join both Profit, NP margin into one chart
+    ax.plot(xaxis, yaxis, color='red', linewidth=2, label='Quarter Revenue')
+    ax.legend(loc="upper left", fontsize=12)
+    ax.set(xlabel='Date',
+           ylabel='Price RM(million/x1000000) ',
+           title=f'{stock_name} Quarterly Revenue Sales',
+           xlim=[df['quarter date'].iloc[-1], df['quarter date'].iloc[0]]
+           )
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))  # set x-axis date formatter
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=6))  # set interval for x-axis
+    ax.tick_params(left=False, bottom=False)
+    ax.grid(b=True, linestyle='--', alpha=0.5)  # background grid
+    ax.set_facecolor((.94, .95, .98))   # background colour
+
+    # save it to a temporary buffer
+    buf = BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight')
+
+    # embed the result in the html output
+    chart = base64.b64encode(buf.getbuffer()).decode('ascii')
+    return chart
+
 
 if __name__ == '__main__':
     code = '1155'
@@ -59,4 +118,6 @@ if __name__ == '__main__':
     # finance chart
     stock = Stock(code)
     finance_data = stock.finance_result()
-    finance_chart(finance_data.to_df())
+    df = finance_data.to_df()
+    # finance_chart_test(df)
+    finance_chart(df)

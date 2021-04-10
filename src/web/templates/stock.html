@@ -27,7 +27,7 @@
         <button class="tablinks" onclick="opentab(event, 'News')">News</button>
         <button class="tablinks" onclick="opentab(event, 'Power BI')">Power BI</button>
     </div>
-    <div id="Overview" class="tabcontent" style="display: block">
+    <div id="Overview" class="tabcontent container" style="display: block">
         <h1>Overview</h1>
         <div class="container">
             <div class="row">
@@ -87,10 +87,10 @@
             </div>
         </div>
     </div>
-    <div id="Technical Chart" class="tabcontent">
+    <div id="Technical Chart" class="tabcontent container">
         <h2><a href="https://www.tradingview.com/chart/?symbol=MYX%3A{{ company }}" target="_blank">Technical Chart</a> </h2>
     </div>
-    <div id="Finance" class="tabcontent">
+    <div id="Finance" class="tabcontent container">
         <h2> Finance Result </h2>
         <table id="finance_table" class="table table-sm">
         <caption>{{ stock.name }} Finance Result</caption>
@@ -137,7 +137,7 @@
         </tbody>
     </table>
     </div>
-    <div id="News" class="tabcontent">
+    <div id="News" class="tabcontent container">
         <h2> KLSE News </h2>
         <div>
             <table id="klse_news_table" class="table table-sm">
@@ -185,9 +185,11 @@
             </table>
         </div>
     </div>
-    </div>
     <div id="Power BI" class="tabcontent">
-        <h1> WIP </h1>
+        <h1> Stock {{ stock.name }} </h1>
+        <div class="col-sm-12">
+        <img class="img-responsive img-rounded" style="margin: 0 auto" src="data:image/png;base64,{{ chart }}" alt="Quarter Revenue Result"/>
+        </div>
     </div>
     <script>
         function opentab(evt, tabname){
