@@ -166,6 +166,7 @@ class QuarterResult:
                     value = f'{yyyy}-{mm}-{dd}'
             elif key in ('NP Margin', 'ROE', 'QoQ', 'YoY', 'EOQ DY'):
                 try:
+                    value = value.replace(',', '')
                     value = round(float(value.strip('%'))/100,4)
                 except Exception as e:
                     raise FinancialDataErrorException(f'Key: {key}, Unable to convert to float: {e}')
