@@ -102,7 +102,7 @@ def stock(code):  # code obtain from url_for **kwargs
     fin_chart = chart.finance_chart(df=finance.to_df(), stock_name=stock.name)
     return render_template('stock.html',
                            result=news,
-                           finance= finance,
+                           finance=finance,
                            stock=stock,
                            company=company,
                            chart=fin_chart)

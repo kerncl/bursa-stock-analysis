@@ -118,8 +118,8 @@
                 {% for quarter_no, finance in quarter.items() %}
                     <tr>
                         <td>{{ quarter_no }}</td>
-                        <td>{{ finance['Ann. Date'] }}</td>
-                        <td>{{ finance['Quarter'] }}</td>
+                        <td>{{ finance['Ann. Date'].date() }}</td>
+                        <td>{{ finance['Quarter'].date() }}</td>
                         <td>{{ finance['Revenue'] }}</td>
                         <td>{{ finance['PBT'] }}</td>
                         <td>{{ finance['NP'] }}</td>
