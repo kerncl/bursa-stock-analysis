@@ -51,32 +51,11 @@ def technical_chart(code):
     return iframe
 
 
-def finance_chart_interactive(df, stock_name):
-    million = 1000000   # todo: merge interactive & web together
-    plt.figure(figsize=(26, 12))  # figsize= x,y
-    ax = plt.subplot(1, 1, 1)
-    xaxis = df['quarter date']
-    yaxis = df['revenue'].div(million)
-    ax.plot(xaxis, yaxis, color='red', linewidth=2, label='Quarter Revenue')
-    ax.legend(loc="upper left", fontsize=12)
-    ax.set(xlabel='Date',
-           ylabel='Price RM(million/x1000000) ',
-           title=f'{stock_name} Quarterly Revenue Sales',
-           xlim=[df['quarter date'].iloc[-1], df['quarter date'].iloc[0]]
-           )
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))  # set x-axis date formatter
-    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))  # set interval for x-axis
-    ax.tick_params(left=False, bottom=False)
-    ax.grid(b=True, linestyle='--', alpha=0.5)  # background grid
-    ax.set_facecolor((.94, .95, .98))
-    plt.show()
-    pass
-
-
-def finance_chart(df, stock_name):
+def finance_chart(df, stock_name, web=True):
     """
     Finance chart by using matplotlib and display on web
     Args:
+        web (Boolean): Default True
         df (dataframe): Finance Result in dataframe format
         stock_name (str): stock name eg: KLSE: MAYBANK (1155)
 
@@ -84,30 +63,45 @@ def finance_chart(df, stock_name):
         (str) Image of 64bit encoder text
     """
     million = 1000000
-    fig = Figure(figsize=(16, 12))
-    ax = fig.add_subplot(1, 1, 1)
+    if web:
+        fig = Figure(figsize=(16, 12))
+        ax = fig.add_subplot(1, 1, 1)
+    else:
+        plt.figure(figsize=(16, 12))
+        ax = plt.subplot(1, 1, 1)
+    twin = ax.twinx()
     xaxis = df['quarter date']
-    yaxis = df['revenue'].div(million)  # todo: join both Profit, NP margin into one chart
-    ax.plot(xaxis, yaxis, color='red', linewidth=2, label='Quarter Revenue')
+    y_revenue = df['revenue'].div(million)
+    y_NP = df['NP'].div(million)
+    y_PBT = df['PBT'].div(million)
+    y_NPM = df['NP Margin(%)'].mul(100)
+    ax.plot(xaxis, y_revenue, color='red', linewidth=2, label='Quarter Revenue')
+    ax.plot(xaxis, y_PBT, color='blue', linewidth=2, label='PBT')
+    ax.plot(xaxis, y_NP, color='black', linewidth=2, label='NP')
+    twin.plot(xaxis, y_NPM, color='green', linewidth=1, label='NP margin', linestyle='--')
     ax.legend(loc="upper left", fontsize=12)
     ax.set(xlabel='Date',
            ylabel='Price RM(million/x1000000) ',
-           title=f'{stock_name} Quarterly Revenue Sales',
+           title=f'{stock_name} Finance Chart',
            xlim=[df['quarter date'].iloc[-1], df['quarter date'].iloc[0]]
            )
+    twin.set_ylabel('Percentage (%)')
+    twin.legend(loc='upper right', fontsize=12)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))  # set x-axis date formatter
     ax.xaxis.set_major_locator(mdates.MonthLocator(interval=6))  # set interval for x-axis
     ax.tick_params(left=False, bottom=False)
     ax.grid(b=True, linestyle='--', alpha=0.5)  # background grid
     ax.set_facecolor((.94, .95, .98))   # background colour
 
-    # save it to a temporary buffer
-    buf = BytesIO()
-    fig.savefig(buf, format='png', bbox_inches='tight')
+    if web:
+        # save it to a temporary buffer
+        buf = BytesIO()
+        fig.savefig(buf, format='png', bbox_inches='tight')
 
-    # embed the result in the html output
-    chart = base64.b64encode(buf.getbuffer()).decode('ascii')
-    return chart
+        # embed the result in the html output
+        chart = base64.b64encode(buf.getbuffer()).decode('ascii')
+        return chart
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -119,5 +113,4 @@ if __name__ == '__main__':
     stock = Stock(code)
     finance_data = stock.finance_result()
     df = finance_data.to_df()
-    # finance_chart_test(df)
-    finance_chart(df)
+    finance_chart(df=df, stock_name=stock.name, web=False)

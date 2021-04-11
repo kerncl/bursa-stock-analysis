@@ -78,7 +78,7 @@ class FinanceData(MutableMapping, dict):
     def values(self):
         return self.__data.values()
 
-    def to_df(self):
+    def to_df(self):    # todo: save as csv
         """
         Convert dict-like into dataframe structure
         Returns:
@@ -99,6 +99,16 @@ class FinanceData(MutableMapping, dict):
                     overall_quarter.append(quarter_.copy())
         df = pd.DataFrame(overall_quarter, columns=header)
         return df
+
+    def to_csv(self):
+        """
+        Convert to CSV
+        Returns:
+            CSV file
+        """
+        df = self.to_df()
+        df.to_csv(index=False)
+        pass
 
     @staticmethod
     def parser(**kwargs):
