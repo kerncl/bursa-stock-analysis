@@ -78,7 +78,7 @@ class FinanceData(MutableMapping, dict):
     def values(self):
         return self.__data.values()
 
-    def to_df(self):    # todo: save as csv
+    def to_df(self):
         """
         Convert dict-like into dataframe structure
         Returns:
@@ -176,8 +176,11 @@ class QuarterResult:
                     value = f'{yyyy}-{mm}-{dd}'
             elif key in ('NP Margin', 'ROE', 'QoQ', 'YoY', 'EOQ DY'):
                 try:
-                    value = value.replace(',', '')
-                    value = round(float(value.strip('%'))/100,4)
+                    if '-' in value:
+                        value = 0.0
+                    else:
+                        value = value.replace(',', '')
+                        value = round(float(value.strip('%'))/100,4)
                 except Exception as e:
                     raise FinancialDataErrorException(f'Key: {key}, Unable to convert to float: {e}')
 
