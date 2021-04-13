@@ -188,8 +188,12 @@
     <div id="Power BI" class="tabcontent">
         <h1> Stock {{ stock.name }} </h1>
         <div class="col-sm-12">
-        <img class="img-responsive img-rounded" style="margin: 0 auto" src="data:image/png;base64,{{ chart }}" alt="Quarter Revenue Result"/>
+<!--        <img class="img-responsive img-rounded" style="margin: 0 auto" src="data:image/svg+xml;base64,{{ chart }}" alt="Quarter Revenue Result"/>-->
+            <embed type="image/svg+xml" src="data:image/svg+xml;base64,{{ chart }}">
         </div>
+<!--        <div class="col-sm-12">-->
+<!--            <iframe src="{{ url_for('static', filename='temp_chart.html') }}" width="800px" height="1000px"></iframe>-->
+<!--        </div>-->
     </div>
     <script>
         function opentab(evt, tabname){
