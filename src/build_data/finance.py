@@ -165,15 +165,18 @@ class QuarterResult:
                     'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'may': '05', 'jun': '06',
                     'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
                 }
-                dd, mm, yyyy = value.split('-')
-                mm = month_convertion.get(mm.lower(), None)
-                if key in ('Quarter', 'Ann. Date'):
-                    try:
-                        value = datetime(int(yyyy), int(mm), int(dd))
-                    except Exception as e:
-                        raise FinancialDataErrorException(f'Key: {key}, Unable to convert to datetime: {e}')
+                if value:
+                    dd, mm, yyyy = value.split('-')
+                    mm = month_convertion.get(mm.lower(), None)
+                    if key in ('Quarter', 'Ann. Date'):
+                        try:
+                            value = datetime(int(yyyy), int(mm), int(dd))
+                        except Exception as e:
+                            raise FinancialDataErrorException(f'Key: {key}, Unable to convert to datetime: {e}')
+                    else:
+                        value = f'{yyyy}-{mm}-{dd}'
                 else:
-                    value = f'{yyyy}-{mm}-{dd}'
+                    value = datetime(1,1,1)
             elif key in ('NP Margin', 'ROE', 'QoQ', 'YoY', 'EOQ DY'):
                 try:
                     if '-' in value:
